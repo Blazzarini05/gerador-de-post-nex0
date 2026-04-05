@@ -21,21 +21,27 @@ function getHeaderPosition(pos: TextPosition): React.CSSProperties {
 export function T01DarkHeader({ data, width = 540, height = 960 }: Props) {
   const overlayOpacity = (data.overlayOpacity ?? 70) / 100;
   const pos: TextPosition = data.textPosition ?? "top";
+  const bgPos = data.imagePosition ?? "center";
 
   return (
     <div
       className="relative overflow-hidden bg-[#0A0A0A]"
       style={{ width: `${width}px`, height: `${height}px` }}
     >
-      {/* Background photo */}
+      {/* Background photo — background-image preserves aspect ratio via cover */}
       {data.imageUrl ? (
-        <img
-          src={data.imageUrl}
-          alt=""
-          crossOrigin="anonymous"
-          className="absolute inset-0 w-full h-full"
-          style={{ objectFit: "cover", objectPosition: "center" }}
-        />
+        <>
+          {/* Hidden img tag forces CORS cache entry so html2canvas can read background-image */}
+          <img src={data.imageUrl} alt="" crossOrigin="anonymous" style={{ display: "none" }} />
+          <div
+            className="absolute inset-0 z-0"
+            style={{
+              backgroundImage: `url(${data.imageUrl})`,
+              backgroundSize: "cover",
+              backgroundPosition: bgPos,
+            }}
+          />
+        </>
       ) : (
         <div
           className="absolute inset-0 z-0"
@@ -61,7 +67,6 @@ export function T01DarkHeader({ data, width = 540, height = 960 }: Props) {
           minHeight: "290px",
         }}
       >
-        {/* Tag */}
         {data.tag && (
           <p
             className="tracking-[0.3em] uppercase mb-4 font-medium"
@@ -70,35 +75,20 @@ export function T01DarkHeader({ data, width = 540, height = 960 }: Props) {
             {data.tag}
           </p>
         )}
-
-        {/* Title */}
         {data.title && (
           <h1
             className="font-[family-name:var(--font-display)] text-white uppercase text-center leading-[0.93]"
-            style={{
-              fontSize: "40px",
-              letterSpacing: "0.015em",
-              whiteSpace: "pre-line",
-            }}
+            style={{ fontSize: "40px", letterSpacing: "0.015em", whiteSpace: "pre-line" }}
           >
             {data.title}
           </h1>
         )}
-
-        {/* Subtitle */}
         {data.subtitle && (
           <>
-            <div
-              className="w-full my-5"
-              style={{ height: "1px", background: "rgba(255,255,255,0.22)" }}
-            />
+            <div className="w-full my-5" style={{ height: "1px", background: "rgba(255,255,255,0.22)" }} />
             <p
               className="font-light text-center leading-[1.55]"
-              style={{
-                fontSize: "13px",
-                color: "rgba(255,255,255,0.75)",
-                maxWidth: "340px",
-              }}
+              style={{ fontSize: "13px", color: "rgba(255,255,255,0.75)", maxWidth: "340px" }}
             >
               {data.subtitle}
             </p>

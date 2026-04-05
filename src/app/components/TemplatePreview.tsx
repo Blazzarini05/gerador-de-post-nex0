@@ -236,7 +236,7 @@ export function TemplatePreview({ project, currentSlide, onSetCurrentSlide }: Pr
         backgroundColor: "#0A0A0A",
         logging: false,
         useCORS: true,
-        allowTaint: true,
+        allowTaint: false,
         imageTimeout: 0,
         removeContainer: true,
         foreignObjectRendering: false,

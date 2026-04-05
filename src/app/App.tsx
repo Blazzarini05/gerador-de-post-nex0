@@ -14,6 +14,7 @@ export interface SlideData {
   tag?: string;
   overlayOpacity?: number; // 0-100 percentage
   textPosition?: TextPosition; // vertical text placement
+  imagePosition?: string; // CSS background-position value e.g. "center", "top left"
 }
 
 export type AnimationType =
@@ -65,6 +66,7 @@ export const createDefaultSlide = (index: number = 0): SlideData => ({
   tag: "VERSAVISUAL",
   overlayOpacity: 70,
   textPosition: "bottom",
+  imagePosition: "center",
 });
 
 function App() {
