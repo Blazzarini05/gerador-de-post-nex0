@@ -1,0 +1,226 @@
+import { useState, useCallback } from "react";
+import { TemplateSelector } from "./components/TemplateSelector";
+import { TemplateEditor } from "./components/TemplateEditor";
+import { TemplatePreview } from "./components/TemplatePreview";
+import { Header } from "./components/Header";
+
+export interface SlideData {
+  id: string;
+  title: string;
+  subtitle: string;
+  imageUrl: string;
+  tag?: string;
+  overlayOpacity?: number; // 0-100 percentage
+}
+
+export type AnimationType =
+  | "none"
+  | "fade-in"
+  | "slide-up"
+  | "zoom-out"
+  | "reveal"
+  | "drift";
+
+export type TemplateId =
+  | "t01-dark-header"
+  | "t02-bottom-text"
+  | "t03-bw-editorial"
+  | "t04-square-split"
+  | "t05-magazine-wide"
+  | "t06-minimal";
+export type OutputFormat = "9:16" | "4:5" | "1:1" | "16:9";
+
+export const OUTPUT_FORMAT_DIMS: Record<OutputFormat, { w: number; h: number; label: string }> = {
+  "9:16": { w: 540, h: 960, label: "Story 9:16" },
+  "4:5":  { w: 540, h: 675, label: "Feed 4:5" },
+  "1:1":  { w: 540, h: 540, label: "Post 1:1" },
+  "16:9": { w: 960, h: 540, label: "Wide 16:9" },
+};
+
+export interface ProjectState {
+  templateId: TemplateId | null;
+  slides: SlideData[];
+  currentSlideIndex: number;
+  animation: AnimationType;
+  animationSpeed: number;
+  isCarousel: boolean;
+  brandName: string;
+  outputFormat: OutputFormat;
+}
+
+export const createDefaultSlide = (index: number = 0): SlideData => ({
+  id: `slide-${Date.now()}-${index}`,
+  title:
+    index === 0
+      ? "CADA FRAME\nÉ UMA\nDECISÃO."
+      : `SLIDE ${index + 1}.`,
+  subtitle:
+    index === 0
+      ? "Fotografia com direção de cena, leitura de luz e sensibilidade editorial. Festivais, corporativos, casamentos, bastidores."
+      : "Edite este slide com seu conteúdo editorial.",
+  imageUrl: "",
+  tag: "VERSAVISUAL",
+  overlayOpacity: 70,
+});
+
+function App() {
+  const [project, setProject] = useState<ProjectState>({
+    templateId: null,
+    slides: [createDefaultSlide(0)],
+    currentSlideIndex: 0,
+    animation: "none",
+    animationSpeed: 1.2,
+    isCarousel: false,
+    brandName: "VERSA VISUAL",
+    outputFormat: "9:16",
+  });
+
+  const handleSelectTemplate = useCallback((id: TemplateId) => {
+    setProject((prev) => ({ ...prev, templateId: id }));
+  }, []);
+
+  const handleUpdateSlide = useCallback((slideData: Partial<SlideData>) => {
+    setProject((prev) => {
+      const newSlides = [...prev.slides];
+      newSlides[prev.currentSlideIndex] = {
+        ...newSlides[prev.currentSlideIndex],
+        ...slideData,
+      };
+      return { ...prev, slides: newSlides };
+    });
+  }, []);
+
+  const handleSetCurrentSlide = useCallback((index: number) => {
+    setProject((prev) => ({ ...prev, currentSlideIndex: index }));
+  }, []);
+
+  const handleSetSlideCount = useCallback((count: number) => {
+    setProject((prev) => {
+      const current = prev.slides;
+      let newSlides = [...current];
+      while (newSlides.length < count) {
+        newSlides.push(createDefaultSlide(newSlides.length));
+      }
+      newSlides = newSlides.slice(0, count);
+      return {
+        ...prev,
+        slides: newSlides,
+        currentSlideIndex: Math.min(prev.currentSlideIndex, count - 1),
+      };
+    });
+  }, []);
+
+  const handleSetCarousel = useCallback((isCarousel: boolean) => {
+    setProject((prev) => {
+      if (isCarousel && prev.slides.length < 2) {
+        return {
+          ...prev,
+          isCarousel,
+          slides: [...prev.slides, createDefaultSlide(1)],
+        };
+      }
+      return { ...prev, isCarousel };
+    });
+  }, []);
+
+  const handleDuplicateSlide = useCallback(() => {
+    setProject((prev) => {
+      const current = prev.slides[prev.currentSlideIndex];
+      const newSlide: SlideData = {
+        ...current,
+        id: `slide-${Date.now()}-dup`,
+      };
+      const newSlides = [
+        ...prev.slides.slice(0, prev.currentSlideIndex + 1),
+        newSlide,
+        ...prev.slides.slice(prev.currentSlideIndex + 1),
+      ];
+      return {
+        ...prev,
+        slides: newSlides,
+        currentSlideIndex: prev.currentSlideIndex + 1,
+      };
+    });
+  }, []);
+
+  const handleDeleteSlide = useCallback(() => {
+    setProject((prev) => {
+      if (prev.slides.length <= 1) return prev;
+      const newSlides = prev.slides.filter(
+        (_, i) => i !== prev.currentSlideIndex
+      );
+      return {
+        ...prev,
+        slides: newSlides,
+        currentSlideIndex: Math.max(0, prev.currentSlideIndex - 1),
+      };
+    });
+  }, []);
+
+  const currentSlide =
+    project.slides[project.currentSlideIndex] || project.slides[0];
+
+  return (
+    <div className="min-h-screen bg-[#EBEBEB]">
+      <Header />
+
+      <main className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 py-6 sm:py-8 lg:py-10">
+        {/* Hero */}
+        <div className="mb-8 sm:mb-10 lg:mb-12">
+          <p className="text-[10px] tracking-[0.35em] uppercase text-[#888888] font-medium mb-3 sm:mb-4">
+            Versa Visual · Studio de Conteúdo · v2.0
+          </p>
+          <h1
+            className="font-[family-name:var(--font-display)] tracking-[0.04em] text-[#0A0A0A] leading-[0.92] uppercase mb-4 sm:mb-5"
+            style={{ fontSize: "clamp(36px, 8vw, 88px)" }}
+          >
+            Studio de
+            <br />
+            Conteúdo
+          </h1>
+          <p className="text-sm sm:text-base font-light leading-[1.7] text-[#555] max-w-[540px]">
+            Crie posts, stories e carrosséis com a identidade visual Versa.
+            Texto manual ou gerado por IA, animações editoriais e exportação em
+            alta qualidade.
+          </p>
+        </div>
+
+        <TemplateSelector
+          selectedTemplate={project.templateId}
+          onSelectTemplate={handleSelectTemplate}
+        />
+
+        {project.templateId && (
+          <div className="mt-8 sm:mt-10 lg:mt-14 grid grid-cols-1 xl:grid-cols-[minmax(380px,440px)_1fr] gap-6 lg:gap-8 items-start">
+            <TemplateEditor
+              project={project}
+              currentSlide={currentSlide}
+              onUpdateSlide={handleUpdateSlide}
+              onSetCurrentSlide={handleSetCurrentSlide}
+              onSetSlideCount={handleSetSlideCount}
+              onSetCarousel={handleSetCarousel}
+              onSetAnimation={(a) =>
+                setProject((prev) => ({ ...prev, animation: a }))
+              }
+              onSetAnimationSpeed={(s) =>
+                setProject((prev) => ({ ...prev, animationSpeed: s }))
+              }
+              onDuplicateSlide={handleDuplicateSlide}
+              onDeleteSlide={handleDeleteSlide}
+              onSetOutputFormat={(f) =>
+                setProject((prev) => ({ ...prev, outputFormat: f }))
+              }
+            />
+            <TemplatePreview
+              project={project}
+              currentSlide={currentSlide}
+              onSetCurrentSlide={handleSetCurrentSlide}
+            />
+          </div>
+        )}
+      </main>
+    </div>
+  );
+}
+
+export default App;

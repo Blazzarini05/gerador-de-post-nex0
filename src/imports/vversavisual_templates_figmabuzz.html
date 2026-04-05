@@ -1,0 +1,1194 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VERSA VISUAL — Template System for FigmaBuzz</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:ital,wght@0,300;0,400;0,500;0,700;0,900;1,300&family=Barlow+Condensed:wght@700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    /* ── VERSA VISUAL COLOR TOKENS ── */
+    --vv-black:      #0A0A0A;
+    --vv-white:      #FFFFFF;
+    --vv-off-white:  #F2F2F2;
+    --vv-navy:       #0D1B2A;
+    --vv-accent:     #1A3A5C;
+    --vv-gray-dark:  #1C1C1C;
+    --vv-gray-mid:   #888888;
+    --vv-overlay-dark: rgba(10,10,10,0.78);
+    --vv-overlay-mid:  rgba(10,10,10,0.52);
+    --vv-overlay-bot:  rgba(10,10,10,0.72);
+
+    /* ── TYPOGRAPHY TOKENS ── */
+    --font-display:  'Bebas Neue', 'Barlow Condensed', sans-serif;
+    --font-body:     'Barlow', sans-serif;
+    --fs-hero:       clamp(52px, 8vw, 80px);
+    --fs-title:      clamp(36px, 5vw, 56px);
+    --fs-subtitle:   clamp(14px, 1.8vw, 18px);
+    --fs-label:      clamp(10px, 1.2vw, 12px);
+
+    /* ── SPACING ── */
+    --sp-xs: 8px;
+    --sp-sm: 16px;
+    --sp-md: 28px;
+    --sp-lg: 44px;
+    --sp-xl: 72px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--vv-off-white);
+    font-family: var(--font-body);
+    color: var(--vv-black);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ══════════════════════════════════════
+     HEADER SISTEMA
+  ══════════════════════════════════════ */
+  .sys-header {
+    background: var(--vv-black);
+    padding: 32px 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #1C1C1C;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .sys-logo {
+    font-family: var(--font-display);
+    font-size: 26px;
+    letter-spacing: 0.18em;
+    color: var(--vv-white);
+    text-transform: uppercase;
+  }
+  .sys-logo span {
+    color: var(--vv-accent);
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    display: block;
+    margin-top: 2px;
+    font-family: var(--font-body);
+    font-weight: 300;
+  }
+  .sys-nav {
+    display: flex;
+    gap: 32px;
+    list-style: none;
+  }
+  .sys-nav a {
+    color: var(--vv-gray-mid);
+    text-decoration: none;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    font-weight: 500;
+    transition: color 0.2s;
+  }
+  .sys-nav a:hover { color: var(--vv-white); }
+
+  /* ══════════════════════════════════════
+     HERO INTRO
+  ══════════════════════════════════════ */
+  .sys-intro {
+    padding: 80px 60px 60px;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  .sys-intro-label {
+    font-size: 10px;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--vv-gray-mid);
+    font-weight: 500;
+    margin-bottom: 20px;
+  }
+  .sys-intro h1 {
+    font-family: var(--font-display);
+    font-size: clamp(48px, 6vw, 88px);
+    letter-spacing: 0.04em;
+    color: var(--vv-black);
+    line-height: 0.95;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+  }
+  .sys-intro p {
+    font-size: 16px;
+    font-weight: 300;
+    line-height: 1.7;
+    color: #444;
+    max-width: 560px;
+  }
+
+  /* ══════════════════════════════════════
+     DESIGN TOKENS
+  ══════════════════════════════════════ */
+  .tokens-section {
+    padding: 0 60px 80px;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  .section-label {
+    font-size: 10px;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--vv-gray-mid);
+    font-weight: 500;
+    margin-bottom: 32px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #D8D8D8;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: #E0E0E0;
+  }
+  .tokens-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 12px;
+    margin-bottom: 48px;
+  }
+  .color-swatch {
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .swatch-color {
+    height: 60px;
+    border: 1px solid rgba(0,0,0,0.08);
+  }
+  .swatch-info {
+    padding: 8px 0 0;
+  }
+  .swatch-name {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--vv-black);
+    display: block;
+    margin-bottom: 2px;
+  }
+  .swatch-hex {
+    font-size: 10px;
+    color: var(--vv-gray-mid);
+    font-family: monospace;
+  }
+  .type-specimens {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+  }
+  .type-row {
+    padding: 24px;
+    background: var(--vv-white);
+    border: 1px solid #E8E8E8;
+    border-radius: 6px;
+  }
+  .type-label {
+    font-size: 9px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--vv-gray-mid);
+    margin-bottom: 12px;
+  }
+  .type-sample-hero {
+    font-family: var(--font-display);
+    font-size: 52px;
+    line-height: 1;
+    color: var(--vv-black);
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+  }
+  .type-sample-title {
+    font-family: var(--font-display);
+    font-size: 36px;
+    line-height: 1.05;
+    color: var(--vv-black);
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+  }
+  .type-sample-sub {
+    font-family: var(--font-body);
+    font-size: 15px;
+    font-weight: 300;
+    color: #444;
+    line-height: 1.6;
+  }
+  .type-sample-label {
+    font-family: var(--font-body);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--vv-gray-mid);
+  }
+
+  /* ══════════════════════════════════════
+     TEMPLATE CARDS CONTAINER
+  ══════════════════════════════════════ */
+  .templates-section {
+    padding: 0 60px 120px;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  .templates-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 32px;
+    margin-bottom: 60px;
+  }
+  .template-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  .template-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+  }
+  .template-name {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--vv-black);
+  }
+  .template-size {
+    font-size: 10px;
+    font-weight: 400;
+    color: var(--vv-gray-mid);
+    font-family: monospace;
+  }
+
+  /* ══════════════════════════════════════
+     TEMPLATE 01 — OVERLAY TOPO (Dark Header)
+  ══════════════════════════════════════ */
+  .tpl {
+    aspect-ratio: 9/16;
+    position: relative;
+    overflow: hidden;
+    border-radius: 8px;
+    box-shadow: 0 12px 48px rgba(0,0,0,0.18);
+  }
+
+  /* Photo placeholders via gradient */
+  .tpl-photo {
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center;
+  }
+
+  /* TPL 01 - dark top overlay */
+  .tpl-01 .tpl-photo {
+    background: linear-gradient(
+      160deg,
+      #1a0a00 0%,
+      #2d1810 20%,
+      #4a2e20 40%,
+      #3d2215 60%,
+      #1a0e08 100%
+    );
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100%25' height='100%25'%3E%3Cdefs%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3C/defs%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.15'/%3E%3C/svg%3E"),
+    linear-gradient(160deg, #1a0a00 0%, #3d2215 40%, #1a0e08 100%);
+  }
+  /* Simulate fashion runway photo */
+  .tpl-01 .tpl-photo::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 60% 80% at 50% 75%, rgba(80,50,30,0.6) 0%, transparent 70%),
+      radial-gradient(ellipse 40% 60% at 50% 85%, rgba(120,80,50,0.4) 0%, transparent 60%);
+  }
+
+  .tpl-01 .tpl-overlay-top {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    padding: 40px 36px 44px;
+    background: var(--vv-overlay-dark);
+    z-index: 2;
+  }
+  .tpl-01 .tpl-divider {
+    width: 100%;
+    height: 1px;
+    background: rgba(255,255,255,0.35);
+    margin: 18px 0;
+  }
+  .tpl-01 .tpl-title {
+    font-family: var(--font-display);
+    font-size: clamp(28px, 7vw, 44px);
+    color: var(--vv-white);
+    text-transform: uppercase;
+    letter-spacing: 0.01em;
+    line-height: 0.95;
+    text-align: center;
+  }
+  .tpl-01 .tpl-subtitle {
+    font-family: var(--font-body);
+    font-size: clamp(11px, 2.5vw, 14px);
+    font-weight: 300;
+    color: rgba(255,255,255,0.85);
+    text-align: center;
+    line-height: 1.5;
+  }
+
+  /* Human silhouette suggestion */
+  .figure-placeholder {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 65%;
+    height: 72%;
+    background: linear-gradient(
+      180deg,
+      transparent 0%,
+      rgba(60,35,15,0.3) 20%,
+      rgba(40,25,10,0.5) 60%,
+      rgba(20,12,5,0.8) 100%
+    );
+    border-radius: 50% 50% 0 0 / 30% 30% 0 0;
+    z-index: 1;
+  }
+
+  /* ══════════════════════════════════════
+     TEMPLATE 02 — TEXT BOTTOM (Lifestyle)
+  ══════════════════════════════════════ */
+  .tpl-02 .tpl-photo {
+    background: linear-gradient(
+      180deg,
+      #1a6b9a 0%,
+      #1489c8 20%,
+      #0d9ed6 40%,
+      #1a5a8a 70%,
+      #0d2a3d 100%
+    );
+  }
+  .tpl-02 .tpl-photo::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 70% 50% at 60% 30%, rgba(255,200,100,0.25) 0%, transparent 60%),
+      radial-gradient(ellipse 40% 60% at 55% 45%, rgba(180,120,60,0.2) 0%, transparent 50%);
+    z-index: 0;
+  }
+  .scene-palms {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 55%;
+    z-index: 1;
+    overflow: hidden;
+  }
+  .scene-palms::before {
+    content: '';
+    position: absolute;
+    top: -20px; right: 20px;
+    width: 60px; height: 120%;
+    background: linear-gradient(180deg, rgba(30,80,20,0.6) 0%, rgba(20,60,15,0.4) 100%);
+    transform: rotate(-8deg);
+    border-radius: 4px 4px 0 0;
+  }
+  .scene-palms::after {
+    content: '';
+    position: absolute;
+    top: -20px; right: 60px;
+    width: 45px; height: 100%;
+    background: linear-gradient(180deg, rgba(25,70,18,0.5) 0%, rgba(15,50,12,0.3) 100%);
+    transform: rotate(5deg);
+    border-radius: 4px 4px 0 0;
+  }
+  .tpl-02 .tpl-overlay-bot {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    padding: 48px 32px 40px;
+    background: linear-gradient(
+      0deg,
+      var(--vv-overlay-bot) 0%,
+      rgba(10,10,10,0.5) 60%,
+      transparent 100%
+    );
+    z-index: 2;
+  }
+  .tpl-02 .tpl-title {
+    font-family: var(--font-display);
+    font-size: clamp(32px, 8vw, 52px);
+    color: var(--vv-white);
+    text-transform: uppercase;
+    letter-spacing: 0.01em;
+    line-height: 0.9;
+    margin-bottom: 10px;
+  }
+  .tpl-02 .tpl-subtitle {
+    font-family: var(--font-body);
+    font-size: clamp(11px, 2.2vw, 13px);
+    font-weight: 300;
+    color: rgba(255,255,255,0.82);
+    line-height: 1.5;
+    max-width: 240px;
+  }
+
+  /* ══════════════════════════════════════
+     TEMPLATE 03 — B&W EDITORIAL
+  ══════════════════════════════════════ */
+  .tpl-03 .tpl-photo {
+    background: linear-gradient(
+      145deg,
+      #d0cdc8 0%,
+      #b5b2ab 25%,
+      #9a9690 50%,
+      #7a7870 75%,
+      #555250 100%
+    );
+    filter: grayscale(100%);
+  }
+  .tpl-03 .tpl-photo::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 60% 70% at 50% 40%, rgba(200,195,190,0.3) 0%, transparent 65%),
+      linear-gradient(180deg, transparent 30%, rgba(20,20,20,0.5) 100%);
+    z-index: 0;
+  }
+  /* Architecture suggestion */
+  .arch-pattern {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 55%;
+    z-index: 1;
+    overflow: hidden;
+  }
+  .arch-pattern::before {
+    content: '';
+    position: absolute;
+    top: 15%; left: 10%;
+    width: 80%; height: 60%;
+    border: 3px solid rgba(100,95,90,0.25);
+    border-radius: 40% 40% 0 0 / 20% 20% 0 0;
+  }
+  .arch-pattern::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 8px;
+    background: repeating-linear-gradient(
+      90deg,
+      rgba(100,95,90,0.15) 0px,
+      rgba(100,95,90,0.15) 12px,
+      transparent 12px,
+      transparent 20px
+    );
+  }
+  .tpl-03 .tpl-overlay-bot {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    padding: 52px 36px 44px;
+    background: linear-gradient(
+      0deg,
+      rgba(0,0,0,0.85) 0%,
+      rgba(0,0,0,0.55) 55%,
+      transparent 100%
+    );
+    z-index: 2;
+    text-align: center;
+  }
+  .tpl-03 .tpl-title {
+    font-family: var(--font-display);
+    font-size: clamp(36px, 9vw, 58px);
+    color: var(--vv-white);
+    text-transform: uppercase;
+    letter-spacing: 0.01em;
+    line-height: 0.9;
+    margin-bottom: 14px;
+  }
+  .tpl-03 .tpl-subtitle {
+    font-family: var(--font-body);
+    font-size: clamp(11px, 2.2vw, 13px);
+    font-weight: 300;
+    color: rgba(255,255,255,0.78);
+    line-height: 1.55;
+    text-align: center;
+  }
+
+  /* ══════════════════════════════════════
+     TEMPLATE 04 — SPLIT LAYOUT (POST 1:1)
+  ══════════════════════════════════════ */
+  .tpl-04 {
+    aspect-ratio: 1/1 !important;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 12px 48px rgba(0,0,0,0.18);
+    display: grid;
+    grid-template-rows: 60% 40%;
+    position: relative;
+  }
+  .tpl-04-photo {
+    background: linear-gradient(
+      135deg,
+      #0a0a0a 0%,
+      #1a1a1a 40%,
+      #111 100%
+    );
+    position: relative;
+    overflow: hidden;
+  }
+  .tpl-04-photo::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 80% 90% at 50% 60%, rgba(180,120,60,0.12) 0%, transparent 60%),
+      radial-gradient(ellipse 50% 50% at 50% 90%, rgba(30,20,10,0.8) 0%, transparent 70%);
+  }
+  .tpl-04-text {
+    background: var(--vv-black);
+    padding: 24px 28px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .tpl-04-text .tpl-title {
+    font-family: var(--font-display);
+    font-size: clamp(22px, 5vw, 36px);
+    color: var(--vv-white);
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    line-height: 0.95;
+    margin-bottom: 8px;
+  }
+  .tpl-04-text .tpl-divider {
+    width: 32px;
+    height: 2px;
+    background: rgba(255,255,255,0.3);
+    margin-bottom: 10px;
+  }
+  .tpl-04-text .tpl-subtitle {
+    font-size: clamp(10px, 1.8vw, 12px);
+    font-weight: 300;
+    color: rgba(255,255,255,0.65);
+    line-height: 1.5;
+  }
+  .tpl-04-logo {
+    position: absolute;
+    bottom: 16px;
+    right: 20px;
+    font-family: var(--font-display);
+    font-size: 13px;
+    letter-spacing: 0.2em;
+    color: rgba(255,255,255,0.35);
+    text-transform: uppercase;
+    z-index: 3;
+  }
+
+  /* ══════════════════════════════════════
+     TEMPLATE 05 — COVER MAGAZINE (16:9 wide)
+  ══════════════════════════════════════ */
+  .tpl-05 {
+    aspect-ratio: 16/9 !important;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 12px 48px rgba(0,0,0,0.18);
+    position: relative;
+  }
+  .tpl-05 .tpl-photo {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      90deg,
+      #0d1520 0%,
+      #1a2d44 30%,
+      #2d4a6a 60%,
+      #1a3050 100%
+    );
+  }
+  .tpl-05 .tpl-photo::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 60% 80% at 70% 50%, rgba(200,150,80,0.15) 0%, transparent 60%);
+  }
+  .tpl-05-content {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: end;
+    padding: 40px 52px;
+    z-index: 2;
+    background: linear-gradient(
+      90deg,
+      rgba(0,0,0,0.7) 0%,
+      rgba(0,0,0,0.2) 50%,
+      transparent 100%
+    );
+  }
+  .tpl-05-left .tpl-title {
+    font-family: var(--font-display);
+    font-size: clamp(28px, 4.5vw, 52px);
+    color: var(--vv-white);
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    line-height: 0.92;
+    margin-bottom: 16px;
+  }
+  .tpl-05-left .tpl-divider {
+    width: 40px;
+    height: 1px;
+    background: rgba(255,255,255,0.4);
+    margin-bottom: 14px;
+  }
+  .tpl-05-left .tpl-subtitle {
+    font-size: clamp(11px, 1.6vw, 14px);
+    font-weight: 300;
+    color: rgba(255,255,255,0.78);
+    line-height: 1.55;
+    max-width: 280px;
+  }
+  .tpl-05-right {
+    display: flex;
+    justify-content: flex-end;
+    align-items: flex-end;
+  }
+  .tpl-05-badge {
+    width: 70px;
+    height: 70px;
+    border: 1px solid rgba(255,255,255,0.25);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-display);
+    font-size: 9px;
+    color: rgba(255,255,255,0.6);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    text-align: center;
+    line-height: 1.4;
+  }
+
+  /* ══════════════════════════════════════
+     TEMPLATE 06 — MINIMAL STATEMENT
+  ══════════════════════════════════════ */
+  .tpl-06 {
+    aspect-ratio: 9/16;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 12px 48px rgba(0,0,0,0.18);
+    background: var(--vv-black);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 44px 36px;
+    position: relative;
+  }
+  .tpl-06::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--vv-white);
+  }
+  .tpl-06-top {
+    font-family: var(--font-body);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.35);
+  }
+  .tpl-06-mid {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    padding: 40px 0;
+  }
+  .tpl-06 .tpl-title {
+    font-family: var(--font-display);
+    font-size: clamp(44px, 10vw, 68px);
+    color: var(--vv-white);
+    text-transform: uppercase;
+    line-height: 0.9;
+    letter-spacing: 0.01em;
+  }
+  .tpl-06 .tpl-subtitle {
+    font-size: clamp(12px, 2vw, 14px);
+    font-weight: 300;
+    color: rgba(255,255,255,0.55);
+    line-height: 1.6;
+    margin-top: 24px;
+    border-top: 1px solid rgba(255,255,255,0.12);
+    padding-top: 20px;
+  }
+  .tpl-06-logo-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .tpl-06-logo {
+    font-family: var(--font-display);
+    font-size: 16px;
+    letter-spacing: 0.22em;
+    color: rgba(255,255,255,0.7);
+    text-transform: uppercase;
+  }
+  .tpl-06-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.3);
+  }
+
+  /* ══════════════════════════════════════
+     SPECS ROW (annotation below each template)
+  ══════════════════════════════════════ */
+  .spec-row {
+    display: flex;
+    gap: 12px;
+    margin-top: 16px;
+    flex-wrap: wrap;
+  }
+  .spec-tag {
+    font-size: 9px;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--vv-gray-mid);
+    background: var(--vv-white);
+    border: 1px solid #E0E0E0;
+    padding: 4px 10px;
+    border-radius: 100px;
+  }
+
+  /* ══════════════════════════════════════
+     WIDE TEMPLATES GRID (16:9 + 1:1)
+  ══════════════════════════════════════ */
+  .templates-wide {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 32px;
+    margin-bottom: 32px;
+  }
+  .tpl-wide-card {
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ══════════════════════════════════════
+     FOOTER
+  ══════════════════════════════════════ */
+  .sys-footer {
+    background: var(--vv-black);
+    padding: 48px 60px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .sys-footer-logo {
+    font-family: var(--font-display);
+    font-size: 22px;
+    letter-spacing: 0.18em;
+    color: rgba(255,255,255,0.6);
+    text-transform: uppercase;
+  }
+  .sys-footer-meta {
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: rgba(255,255,255,0.25);
+    text-transform: uppercase;
+  }
+
+  /* ══════════════════════════════════════
+     RESPONSIVE
+  ══════════════════════════════════════ */
+  @media (max-width: 1100px) {
+    .templates-grid { grid-template-columns: repeat(2, 1fr); }
+    .templates-wide { grid-template-columns: 1fr; }
+    .type-specimens { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 700px) {
+    .sys-header { padding: 20px 24px; }
+    .sys-intro, .tokens-section, .templates-section { padding-left: 24px; padding-right: 24px; }
+    .templates-grid { grid-template-columns: 1fr; }
+    .sys-nav { display: none; }
+    .sys-footer { padding: 32px 24px; flex-direction: column; gap: 12px; text-align: center; }
+  }
+
+  /* ══════════════════════════════════════
+     ANIMATION
+  ══════════════════════════════════════ */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .tpl, .tpl-04, .tpl-05, .tpl-06 {
+    animation: fadeUp 0.5s ease both;
+  }
+  .template-card:nth-child(1) .tpl { animation-delay: 0.05s; }
+  .template-card:nth-child(2) .tpl { animation-delay: 0.12s; }
+  .template-card:nth-child(3) .tpl { animation-delay: 0.19s; }
+</style>
+</head>
+<body>
+
+<!-- ── HEADER ── -->
+<header class="sys-header">
+  <div class="sys-logo">
+    Versa Visual
+    <span>Template System · FigmaBuzz Edition</span>
+  </div>
+  <nav>
+    <ul class="sys-nav">
+      <li><a href="#tokens">Tokens</a></li>
+      <li><a href="#stories">Stories 9:16</a></li>
+      <li><a href="#posts">Posts</a></li>
+      <li><a href="#specs">Specs</a></li>
+    </ul>
+  </nav>
+</header>
+
+<!-- ── INTRO ── -->
+<section class="sys-intro">
+  <p class="sys-intro-label">Versavisual · Design System · v1.0</p>
+  <h1>Template<br>System</h1>
+  <p>Identidade visual estruturada em templates responsivos para FigmaBuzz. Editorial de alta voltagem, tipografia expressiva, fotografia como linguagem primária.</p>
+</section>
+
+<!-- ── DESIGN TOKENS ── -->
+<section class="tokens-section" id="tokens">
+  <p class="section-label">01 · Paleta de Cores</p>
+
+  <div class="tokens-grid">
+    <div class="color-swatch">
+      <div class="swatch-color" style="background:#0A0A0A;"></div>
+      <div class="swatch-info">
+        <span class="swatch-name">VV Black</span>
+        <span class="swatch-hex">#0A0A0A</span>
+      </div>
+    </div>
+    <div class="color-swatch">
+      <div class="swatch-color" style="background:#FFFFFF; border:1px solid #eee;"></div>
+      <div class="swatch-info">
+        <span class="swatch-name">VV White</span>
+        <span class="swatch-hex">#FFFFFF</span>
+      </div>
+    </div>
+    <div class="color-swatch">
+      <div class="swatch-color" style="background:#0D1B2A;"></div>
+      <div class="swatch-info">
+        <span class="swatch-name">Navy Deep</span>
+        <span class="swatch-hex">#0D1B2A</span>
+      </div>
+    </div>
+    <div class="color-swatch">
+      <div class="swatch-color" style="background:#1A3A5C;"></div>
+      <div class="swatch-info">
+        <span class="swatch-name">VV Accent</span>
+        <span class="swatch-hex">#1A3A5C</span>
+      </div>
+    </div>
+    <div class="color-swatch">
+      <div class="swatch-color" style="background:#1C1C1C;"></div>
+      <div class="swatch-info">
+        <span class="swatch-name">Gray Dark</span>
+        <span class="swatch-hex">#1C1C1C</span>
+      </div>
+    </div>
+    <div class="color-swatch">
+      <div class="swatch-color" style="background:#888888;"></div>
+      <div class="swatch-info">
+        <span class="swatch-name">Gray Mid</span>
+        <span class="swatch-hex">#888888</span>
+      </div>
+    </div>
+    <div class="color-swatch">
+      <div class="swatch-color" style="background:#F2F2F2;"></div>
+      <div class="swatch-info">
+        <span class="swatch-name">Off White</span>
+        <span class="swatch-hex">#F2F2F2</span>
+      </div>
+    </div>
+    <div class="color-swatch">
+      <div class="swatch-color" style="background:rgba(10,10,10,0.78); border:1px solid #eee;"></div>
+      <div class="swatch-info">
+        <span class="swatch-name">Overlay Dk</span>
+        <span class="swatch-hex">78% Opacity</span>
+      </div>
+    </div>
+  </div>
+
+  <p class="section-label">02 · Tipografia</p>
+  <div class="type-specimens">
+    <div class="type-row">
+      <p class="type-label">Display · Bebas Neue · Hero</p>
+      <div class="type-sample-hero">EDITORIAL</div>
+    </div>
+    <div class="type-row">
+      <p class="type-label">Display · Bebas Neue · Title</p>
+      <div class="type-sample-title">Onde o asfalto<br>encontra.</div>
+    </div>
+    <div class="type-row">
+      <p class="type-label">Body · Barlow Light 300</p>
+      <div class="type-sample-sub">Capturamos o lifestyle brasileiro com a precisão de um hub criativo de alto nível.</div>
+    </div>
+    <div class="type-row">
+      <p class="type-label">Label · Barlow Medium 500</p>
+      <div class="type-sample-label">Versa Visual · Template System · 2025</div>
+    </div>
+  </div>
+</section>
+
+<!-- ── TEMPLATES 9:16 (STORIES) ── -->
+<section class="templates-section" id="stories">
+  <p class="section-label">03 · Templates Story 9:16</p>
+
+  <div class="templates-grid">
+
+    <!-- T01: Dark Top Overlay -->
+    <div class="template-card">
+      <div class="template-meta">
+        <span class="template-name">T01 · Dark Header</span>
+        <span class="template-size">1080 × 1920</span>
+      </div>
+      <div class="tpl tpl-01">
+        <div class="tpl-photo"></div>
+        <div class="tpl-overlay-top">
+          <div class="tpl-title">Relevância que<br>gera prova<br>social.</div>
+          <div class="tpl-divider"></div>
+          <div class="tpl-subtitle">Estratégia e entretenimento unidos para destacar sua marca em um mercado seletivo.</div>
+        </div>
+        <div class="figure-placeholder"></div>
+      </div>
+      <div class="spec-row">
+        <span class="spec-tag">Overlay: 78% Dark</span>
+        <span class="spec-tag">Bebas Neue 44px</span>
+        <span class="spec-tag">Barlow 300 14px</span>
+        <span class="spec-tag">Divider 1px</span>
+      </div>
+    </div>
+
+    <!-- T02: Text Bottom (Lifestyle) -->
+    <div class="template-card">
+      <div class="template-meta">
+        <span class="template-name">T02 · Bottom Text</span>
+        <span class="template-size">1080 × 1920</span>
+      </div>
+      <div class="tpl tpl-02">
+        <div class="tpl-photo">
+          <div class="scene-palms"></div>
+        </div>
+        <div class="tpl-overlay-bot">
+          <div class="tpl-title">Onde o asfalto<br>encontra o<br>editorial.</div>
+          <div class="tpl-subtitle">Capturamos o lifestyle brasileiro com a precisão de um hub criativo de alto nível.</div>
+        </div>
+      </div>
+      <div class="spec-row">
+        <span class="spec-tag">Vignette Gradient</span>
+        <span class="spec-tag">Bebas Neue 52px</span>
+        <span class="spec-tag">Barlow 300 13px</span>
+        <span class="spec-tag">Left Align</span>
+      </div>
+    </div>
+
+    <!-- T03: B&W Editorial -->
+    <div class="template-card">
+      <div class="template-meta">
+        <span class="template-name">T03 · B&W Editorial</span>
+        <span class="template-size">1080 × 1920</span>
+      </div>
+      <div class="tpl tpl-03">
+        <div class="tpl-photo">
+          <div class="arch-pattern"></div>
+        </div>
+        <div class="tpl-overlay-bot">
+          <div class="tpl-title">A estética<br>do real.</div>
+          <div class="tpl-subtitle">Como transformamos a verdade das ruas em desejo para marcas de luxo. Arraste para ver.</div>
+        </div>
+      </div>
+      <div class="spec-row">
+        <span class="spec-tag">Grayscale</span>
+        <span class="spec-tag">Bebas Neue 58px</span>
+        <span class="spec-tag">Center Align</span>
+        <span class="spec-tag">85% Overlay</span>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ── TEMPLATES WIDE (16:9 + 1:1) ── -->
+<section class="templates-section" id="posts">
+  <p class="section-label">04 · Templates Post & Wide</p>
+
+  <div class="templates-wide">
+
+    <!-- T05: Magazine Cover 16:9 -->
+    <div class="tpl-wide-card">
+      <div class="template-meta">
+        <span class="template-name">T05 · Magazine Cover 16:9</span>
+        <span class="template-size">1920 × 1080</span>
+      </div>
+      <div class="tpl-05">
+        <div class="tpl-photo"></div>
+        <div class="tpl-05-content">
+          <div class="tpl-05-left">
+            <div class="tpl-title">Criação que<br>transforma<br>marcas.</div>
+            <div class="tpl-divider"></div>
+            <div class="tpl-subtitle">Direção de imagem com visão comercial. Salvador, BA.</div>
+          </div>
+          <div class="tpl-05-right">
+            <div class="tpl-05-badge">Versa<br>Visual</div>
+          </div>
+        </div>
+      </div>
+      <div class="spec-row">
+        <span class="spec-tag">Split Layout</span>
+        <span class="spec-tag">Left Gradient</span>
+        <span class="spec-tag">Bebas Neue 52px</span>
+        <span class="spec-tag">Badge Element</span>
+      </div>
+    </div>
+
+    <!-- T04: Square 1:1 -->
+    <div class="tpl-wide-card">
+      <div class="template-meta">
+        <span class="template-name">T04 · Square Post 1:1</span>
+        <span class="template-size">1080 × 1080</span>
+      </div>
+      <div class="tpl-04">
+        <div class="tpl-04-photo"></div>
+        <div class="tpl-04-text">
+          <div class="tpl-title">Narrativa<br>Visual.</div>
+          <div class="tpl-divider"></div>
+          <div class="tpl-subtitle">Estratégia e estética alinhadas ao resultado da sua marca.</div>
+        </div>
+        <div class="tpl-04-logo">VERSA</div>
+      </div>
+      <div class="spec-row">
+        <span class="spec-tag">Split Vertical</span>
+        <span class="spec-tag">60/40 Photo/Text</span>
+        <span class="spec-tag">Black Base</span>
+        <span class="spec-tag">Logo Tag</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- T06: Minimal Statement -->
+  <div class="template-meta" style="margin-top:32px;">
+    <span class="template-name">T06 · Minimal Statement · 9:16</span>
+    <span class="template-size">1080 × 1920 · No Photo</span>
+  </div>
+  <div style="max-width:320px;">
+    <div class="tpl-06">
+      <div class="tpl-06-top">Versa Visual · 2025</div>
+      <div class="tpl-06-mid">
+        <div>
+          <div class="tpl-title">Visão<br>que<br>vende.</div>
+          <div class="tpl-subtitle">Direção de imagem, branding e ativações para marcas que exigem resultado.</div>
+        </div>
+      </div>
+      <div class="tpl-06-logo-row">
+        <div class="tpl-06-logo">Versa Visual</div>
+        <div class="tpl-06-dot"></div>
+      </div>
+    </div>
+    <div class="spec-row">
+      <span class="spec-tag">Typography Only</span>
+      <span class="spec-tag">Black BG</span>
+      <span class="spec-tag">White Rule Top</span>
+      <span class="spec-tag">Bebas Neue 68px</span>
+    </div>
+  </div>
+
+</section>
+
+<!-- ── SPECS TABLE ── -->
+<section class="tokens-section" id="specs">
+  <p class="section-label">05 · Especificações Figma</p>
+
+  <div style="background:var(--vv-white); border:1px solid #E8E8E8; border-radius:8px; overflow:hidden;">
+    <table style="width:100%; border-collapse:collapse; font-size:12px;">
+      <thead>
+        <tr style="background:var(--vv-black); color:var(--vv-white);">
+          <th style="padding:14px 20px; text-align:left; font-weight:500; letter-spacing:0.15em; font-size:10px; text-transform:uppercase;">Template</th>
+          <th style="padding:14px 20px; text-align:left; font-weight:500; letter-spacing:0.15em; font-size:10px; text-transform:uppercase;">Formato</th>
+          <th style="padding:14px 20px; text-align:left; font-weight:500; letter-spacing:0.15em; font-size:10px; text-transform:uppercase;">Resolução</th>
+          <th style="padding:14px 20px; text-align:left; font-weight:500; letter-spacing:0.15em; font-size:10px; text-transform:uppercase;">Overlay</th>
+          <th style="padding:14px 20px; text-align:left; font-weight:500; letter-spacing:0.15em; font-size:10px; text-transform:uppercase;">Tipo Título</th>
+          <th style="padding:14px 20px; text-align:left; font-weight:500; letter-spacing:0.15em; font-size:10px; text-transform:uppercase;">Uso</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr style="border-bottom:1px solid #F0F0F0;">
+          <td style="padding:14px 20px; font-weight:600;">T01</td>
+          <td style="padding:14px 20px;">Story / Reels</td>
+          <td style="padding:14px 20px; font-family:monospace; color:#555;">1080 × 1920</td>
+          <td style="padding:14px 20px;">Top · 78% preto</td>
+          <td style="padding:14px 20px;">Bebas Neue · 44px · Branco</td>
+          <td style="padding:14px 20px; color:#888;">Prova social, depoimento</td>
+        </tr>
+        <tr style="border-bottom:1px solid #F0F0F0; background:#FAFAFA;">
+          <td style="padding:14px 20px; font-weight:600;">T02</td>
+          <td style="padding:14px 20px;">Story / Reels</td>
+          <td style="padding:14px 20px; font-family:monospace; color:#555;">1080 × 1920</td>
+          <td style="padding:14px 20px;">Bottom vignette · 72%</td>
+          <td style="padding:14px 20px;">Bebas Neue · 52px · Esquerda</td>
+          <td style="padding:14px 20px; color:#888;">Lifestyle, editorial urbano</td>
+        </tr>
+        <tr style="border-bottom:1px solid #F0F0F0;">
+          <td style="padding:14px 20px; font-weight:600;">T03</td>
+          <td style="padding:14px 20px;">Story / Reels</td>
+          <td style="padding:14px 20px; font-family:monospace; color:#555;">1080 × 1920</td>
+          <td style="padding:14px 20px;">Bottom · 85% P&B</td>
+          <td style="padding:14px 20px;">Bebas Neue · 58px · Centro</td>
+          <td style="padding:14px 20px; color:#888;">Editorial luxo, moda</td>
+        </tr>
+        <tr style="border-bottom:1px solid #F0F0F0; background:#FAFAFA;">
+          <td style="padding:14px 20px; font-weight:600;">T04</td>
+          <td style="padding:14px 20px;">Post Quadrado</td>
+          <td style="padding:14px 20px; font-family:monospace; color:#555;">1080 × 1080</td>
+          <td style="padding:14px 20px;">Split 60/40</td>
+          <td style="padding:14px 20px;">Bebas Neue · 36px · Esquerda</td>
+          <td style="padding:14px 20px; color:#888;">Feed principal, branding</td>
+        </tr>
+        <tr style="border-bottom:1px solid #F0F0F0;">
+          <td style="padding:14px 20px; font-weight:600;">T05</td>
+          <td style="padding:14px 20px;">Capa / Banner</td>
+          <td style="padding:14px 20px; font-family:monospace; color:#555;">1920 × 1080</td>
+          <td style="padding:14px 20px;">Left gradient · 70%</td>
+          <td style="padding:14px 20px;">Bebas Neue · 52px · Esquerda</td>
+          <td style="padding:14px 20px; color:#888;">LinkedIn, YT Thumbnail</td>
+        </tr>
+        <tr style="background:#FAFAFA;">
+          <td style="padding:14px 20px; font-weight:600;">T06</td>
+          <td style="padding:14px 20px;">Story Tipográfico</td>
+          <td style="padding:14px 20px; font-family:monospace; color:#555;">1080 × 1920</td>
+          <td style="padding:14px 20px;">Sem foto · Fundo preto</td>
+          <td style="padding:14px 20px;">Bebas Neue · 68px · Esquerda</td>
+          <td style="padding:14px 20px; color:#888;">Manifesto, citação, frase</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ── FOOTER ── -->
+<footer class="sys-footer">
+  <div class="sys-footer-logo">Versa Visual</div>
+  <div class="sys-footer-meta">Template System · FigmaBuzz Edition · Salvador, BA · 2025</div>
+</footer>
+
+</body>
+</html>

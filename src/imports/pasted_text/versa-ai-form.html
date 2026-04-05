@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<title>Versa AI SaaS</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@300;500;700&display=swap" rel="stylesheet">
+
+<style>
+body { margin:0; font-family:Barlow; background:#050506; color:#fff; }
+.app { max-width:1200px; margin:auto; padding:24px; }
+.header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
+.title { font-family:"Bebas Neue"; font-size:32px; letter-spacing:.1em; }
+.grid { display:grid; grid-template-columns:300px 1fr; gap:20px; }
+.sidebar { background:#0d0d12; padding:16px; border-radius:12px; }
+.main { background:#111118; padding:16px; border-radius:12px; }
+label { font-size:12px; color:#aaa; text-transform:uppercase; }
+textarea,select,input { width:100%; margin-top:6px; margin-bottom:12px; padding:10px; background:#050506; border:1px solid #222; color:#fff; border-radius:6px; }
+button { background:#ff4f4f; border:none; padding:12px; border-radius:999px; font-weight:600; cursor:pointer; width:100%; }
+.output { white-space:pre-wrap; }
+.card { border:1px solid #222; padding:12px; border-radius:10px; margin-bottom:12px; }
+.actions { display:flex; gap:8px; margin-top:10px; }
+.small-btn { flex:1; background:#1a1a22; border:none; padding:8px; border-radius:6px; cursor:pointer; }
+.topbar { display:flex; gap:10px; }
+.error { color:#ff6b6b; margin-top:10px; }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+<div class="header">
+<div class="title">Versa AI</div>
+<div class="topbar">
+<button onclick="saveHistory()">Salvar</button>
+<button onclick="clearHistory()">Limpar</button>
+</div>
+</div>
+
+<div class="grid">
+
+<div class="sidebar">
+<label>Cliente</label>
+<input id="client" placeholder="Nome da marca">
+
+<label>Cidade</label>
+<input id="city">
+
+<label>Público</label>
+<input id="audience">
+
+<label>Nicho</label>
+<select id="niche">
+<option value="moda">Moda</option>
+<option value="medico">Saúde</option>
+<option value="hotel">Hotel</option>
+<option value="ativacao">Evento</option>
+</select>
+
+<label>Objetivo</label>
+<select id="objective">
+<option value="desejo">Desejo</option>
+<option value="autoridade">Autoridade</option>
+<option value="venda">Venda</option>
+</select>
+
+<label>Tom</label>
+<select id="tone">
+<option value="auto">Auto</option>
+<option value="forte">Forte</option>
+<option value="clean">Clean</option>
+</select>
+
+<label>Input extra</label>
+<textarea id="extra"></textarea>
+
+<label>Variações</label>
+<select id="variations">
+<option value="1">1</option>
+<option value="3">3</option>
+<option value="5">5</option>
+</select>
+
+<button onclick="generate()">Gerar</button>
+</div>
+
+<div class="main">
+<div id="output">Gere um conteúdo</div>
+<div id="error" class="error"></div>
+</div>
+
+</div>
+</div>
+
+<script>
+
+function buildPrompt(data){
+return `
+Crie ${data.variations} variações de conteúdo para Instagram.
+
+Cliente: ${data.client}
+Cidade: ${data.city}
+Público: ${data.audience}
+Nicho: ${data.niche}
+Objetivo: ${data.objective}
+Tom: ${data.tone}
+Extra: ${data.extra}
+
+Estrutura:
+TÍTULO
+LEGENDA
+HASHTAGS
+
+Separe cada variação com ---
+
+Seja direto, moderno e com linguagem de conversão.
+`;
+}
+
+async function generate(){
+
+const data = {
+client: client.value,
+city: city.value,
+audience: audience.value,
+niche: niche.value,
+objective: objective.value,
+tone: tone.value,
+extra: extra.value,
+variations: variations.value
+};
+
+output.textContent = "Gerando...";
+error.textContent = "";
+
+try {
+const res = await fetch("https://api.openai.com/v1/chat/completions",{
+method:"POST",
+headers:{
+"Content-Type":"application/json",
+"Authorization":"Bearer SUA_API_KEY"
+},
+body:JSON.stringify({
+model:"gpt-4o-mini",
+messages:[{role:"user",content:buildPrompt(data)}]
+})
+});
+
+const json = await res.json();
+
+// 🔴 FIX PRINCIPAL
+if (!json || !json.choices || !Array.isArray(json.choices) || json.choices.length === 0) {
+  console.error("Resposta inválida:", json);
+  error.textContent = "Erro: resposta da API inválida. Verifique sua API key ou limite.";
+  output.textContent = "";
+  return;
+}
+
+const content = json.choices[0]?.message?.content;
+
+if (!content) {
+  console.error("Sem conteúdo:", json);
+  error.textContent = "Erro: resposta sem conteúdo.";
+  output.textContent = "";
+  return;
+}
+
+render(content);
+
+} catch (e) {
+console.error(e);
+error.textContent = "Erro na requisição. Verifique conexão ou API key.";
+output.textContent = "";
+}
+}
+
+function render(text){
+output.innerHTML = "";
+
+const parts = text.split("---");
+
+parts.forEach(item=>{
+if(!item.trim()) return;
+
+const div = document.createElement("div");
+div.className = "card";
+
+div.innerHTML = `
+<div>${item.trim()}</div>
+<div class="actions">
+<button class="small-btn" onclick="copyText(this)">Copiar</button>
+</div>
+`;
+
+output.appendChild(div);
+});
+}
+
+function copyText(btn){
+const text = btn.parentElement.previousElementSibling.innerText;
+navigator.clipboard.writeText(text);
+btn.innerText = "Copiado";
+setTimeout(()=>btn.innerText="Copiar",1000);
+}
+
+function saveHistory(){
+localStorage.setItem("versa_history", output.innerHTML);
+}
+
+function clearHistory(){
+localStorage.removeItem("versa_history");
+output.innerHTML = "";
+}
+
+window.onload = ()=>{
+const saved = localStorage.getItem("versa_history");
+if(saved) output.innerHTML = saved;
+}
+
+</script>
+
+</body>
+</html>
