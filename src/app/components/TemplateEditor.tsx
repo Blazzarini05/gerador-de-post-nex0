@@ -13,8 +13,18 @@ import {
   RefreshCw,
   Layers,
   Droplet,
+  BookOpen,
+  LayoutGrid,
+  Image as ImageIcon,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { ProjectState, SlideData, AnimationType, OutputFormat, TextPosition } from "../App";
+import {
+  CONTENT_CAROUSELS,
+  CONTENT_SINGLES,
+  type ContentSlide,
+} from "../data/contentLibrary";
 
 // ── AI Content Database — VERSAVISUAL 6 Pilares de Conteúdo ─────────────────
 type StorySequence = Array<{ title: string; subtitle: string; progression: string }>;
@@ -182,9 +192,10 @@ interface Props {
   onDuplicateSlide: () => void;
   onDeleteSlide: () => void;
   onSetOutputFormat: (format: OutputFormat) => void;
+  onApplyCarousel: (slides: ContentSlide[]) => void;
 }
 
-type Tab = "texto" | "imagem" | "ia" | "animacao";
+type Tab = "texto" | "imagem" | "ia" | "biblioteca" | "animacao";
 
 export function TemplateEditor({
   project,
@@ -198,6 +209,7 @@ export function TemplateEditor({
   onDuplicateSlide,
   onDeleteSlide,
   onSetOutputFormat,
+  onApplyCarousel,
 }: Props) {
   const [tab, setTab] = useState<Tab>("texto");
   const [searchQuery, setSearchQuery] = useState("");
@@ -208,6 +220,9 @@ export function TemplateEditor({
   const [generatedSequence, setGeneratedSequence] = useState<StorySequence | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [dragOver, setDragOver] = useState(false);
+  const [bibMode, setBibMode] = useState<"carousel" | "single">("carousel");
+  const [bibFilter, setBibFilter] = useState("Todos");
+  const [expandedCarousel, setExpandedCarousel] = useState<string | null>(null);
 
   // ── Handlers ──────────────────────────────────────────────────────────────
   const handleFileUpload = useCallback((file: File) => {
@@ -281,7 +296,8 @@ export function TemplateEditor({
             { id: "texto", label: "Texto", icon: "Aa" },
             { id: "imagem", label: "Imagem", icon: "📷" },
             { id: "ia", label: "IA", icon: "✦" },
-            { id: "animacao", label: "Animação", icon: "▶" },
+            { id: "biblioteca", label: "Biblioteca", icon: "≡" },
+            { id: "animacao", label: "Anim.", icon: "▶" },
           ] as const
         ).map((t) => (
           <button
@@ -737,6 +753,213 @@ export function TemplateEditor({
             </div>
           </>
         )}
+
+        {/* ─── BIBLIOTECA TAB ────────────────────────────────────────────── */}
+        {tab === "biblioteca" && (() => {
+          const allCarouselPilares = ["Todos", ...Array.from(new Set(CONTENT_CAROUSELS.map((c) => c.pilar)))];
+          const allSinglePilares = ["Todos", ...Array.from(new Set(CONTENT_SINGLES.map((s) => s.pilar)))];
+          const filteredCarousels = bibFilter === "Todos"
+            ? CONTENT_CAROUSELS
+            : CONTENT_CAROUSELS.filter((c) => c.pilar === bibFilter);
+          const filteredSingles = bibFilter === "Todos"
+            ? CONTENT_SINGLES
+            : CONTENT_SINGLES.filter((s) => s.pilar === bibFilter);
+
+          return (
+            <>
+              {/* Header */}
+              <div className="flex items-center gap-2 mb-1">
+                <BookOpen size={15} className="text-[#0A0A0A]" />
+                <p className="text-sm font-semibold text-[#0A0A0A]">
+                  Biblioteca de Conteúdo V3
+                </p>
+              </div>
+              <p className="text-[11px] text-[#888] leading-relaxed mb-4">
+                {CONTENT_CAROUSELS.length} carrosséis e {CONTENT_SINGLES.length} posts únicos prontos para aplicar ao seu template.
+                Clique em um conteúdo para aplicá-lo diretamente.
+              </p>
+
+              {/* Mode toggle */}
+              <div className="flex gap-2 mb-4">
+                <button
+                  onClick={() => { setBibMode("carousel"); setBibFilter("Todos"); }}
+                  className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg border-2 text-[10px] font-semibold tracking-[0.1em] uppercase transition-all
+                    ${bibMode === "carousel"
+                      ? "border-[#0A0A0A] bg-[#0A0A0A] text-white"
+                      : "border-[#E0E0E0] bg-[#FAFAFA] text-[#555] hover:border-[#0A0A0A]"
+                    }`}
+                >
+                  <LayoutGrid size={12} />
+                  Carrosséis ({CONTENT_CAROUSELS.length})
+                </button>
+                <button
+                  onClick={() => { setBibMode("single"); setBibFilter("Todos"); }}
+                  className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg border-2 text-[10px] font-semibold tracking-[0.1em] uppercase transition-all
+                    ${bibMode === "single"
+                      ? "border-[#0A0A0A] bg-[#0A0A0A] text-white"
+                      : "border-[#E0E0E0] bg-[#FAFAFA] text-[#555] hover:border-[#0A0A0A]"
+                    }`}
+                >
+                  <ImageIcon size={12} />
+                  Posts Únicos ({CONTENT_SINGLES.length})
+                </button>
+              </div>
+
+              {/* Pilar filter */}
+              <div className="mb-4">
+                <p className="text-[9px] tracking-[0.15em] uppercase text-[#888] font-semibold mb-2">Filtrar por pilar</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {(bibMode === "carousel" ? allCarouselPilares : allSinglePilares).map((pilar) => (
+                    <button
+                      key={pilar}
+                      onClick={() => setBibFilter(pilar)}
+                      className={`px-2.5 py-1 rounded-full text-[9px] tracking-[0.08em] uppercase font-semibold transition-all
+                        ${bibFilter === pilar
+                          ? "bg-[#0A0A0A] text-white"
+                          : "bg-[#F2F2F2] border border-[#E0E0E0] text-[#555] hover:bg-[#E0E0E0]"
+                        }`}
+                    >
+                      {pilar}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Carousel cards */}
+              {bibMode === "carousel" && (
+                <div className="space-y-2">
+                  {filteredCarousels.map((carousel) => {
+                    const isExpanded = expandedCarousel === carousel.id;
+                    return (
+                      <div
+                        key={carousel.id}
+                        className="border border-[#E0E0E0] rounded-lg overflow-hidden"
+                      >
+                        {/* Card header */}
+                        <div className="bg-[#FAFAFA] px-4 py-3">
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-1">
+                                <span className="text-[8px] tracking-[0.15em] uppercase bg-[#0A0A0A] text-white px-2 py-0.5 rounded-full font-semibold">
+                                  {carousel.slideCount} slides
+                                </span>
+                                <span className="text-[8px] tracking-[0.12em] uppercase text-[#888] font-medium truncate">
+                                  {carousel.pilar}
+                                </span>
+                              </div>
+                              <p className="text-[11px] font-semibold text-[#0A0A0A] leading-snug line-clamp-2">
+                                {carousel.tema}
+                              </p>
+                            </div>
+                            <button
+                              onClick={() => setExpandedCarousel(isExpanded ? null : carousel.id)}
+                              className="flex-shrink-0 p-1.5 rounded-md bg-[#F0F0F0] text-[#555] hover:bg-[#E0E0E0] transition-colors"
+                            >
+                              {isExpanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+                            </button>
+                          </div>
+
+                          <button
+                            onClick={() => {
+                              onApplyCarousel(carousel.slides);
+                              setTab("texto");
+                            }}
+                            className="mt-2.5 w-full py-2 bg-[#0A0A0A] text-white text-[9px] tracking-[0.15em] uppercase font-semibold rounded-md hover:bg-[#1A1A1A] transition-colors"
+                          >
+                            Aplicar Carrossel Completo →
+                          </button>
+                        </div>
+
+                        {/* Expanded slides preview */}
+                        {isExpanded && (
+                          <div className="border-t border-[#E0E0E0] divide-y divide-[#F0F0F0]">
+                            {carousel.slides.map((slide, idx) => (
+                              <div key={idx} className="px-4 py-3 bg-white">
+                                <div className="flex items-start justify-between gap-2">
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-[8px] tracking-[0.12em] uppercase text-[#AAA] font-semibold mb-1">
+                                      Slide {idx + 1}{slide.cta ? ` · CTA` : ""}
+                                    </p>
+                                    <p
+                                      className="font-[family-name:var(--font-display)] text-[#0A0A0A] uppercase leading-tight mb-1"
+                                      style={{ fontSize: "12px", letterSpacing: "0.02em", whiteSpace: "pre-line" }}
+                                    >
+                                      {slide.title}
+                                    </p>
+                                    <p className="text-[10px] text-[#777] leading-relaxed line-clamp-2">
+                                      {slide.subtitle}
+                                    </p>
+                                    {slide.cta && (
+                                      <p className="mt-1 text-[8px] tracking-[0.1em] uppercase text-[#0A0A0A] font-bold">
+                                        CTA: {slide.cta}
+                                      </p>
+                                    )}
+                                  </div>
+                                  <button
+                                    onClick={() => {
+                                      onUpdateSlide({ title: slide.title, subtitle: slide.subtitle, tag: slide.tag ?? "VERSAVISUAL" });
+                                      setTab("texto");
+                                    }}
+                                    className="flex-shrink-0 px-2.5 py-1 rounded-md bg-[#F0F0F0] border border-[#E0E0E0] text-[8px] tracking-[0.1em] uppercase font-semibold text-[#444] hover:bg-[#0A0A0A] hover:text-white hover:border-[#0A0A0A] transition-all"
+                                  >
+                                    Usar
+                                  </button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* Single cards */}
+              {bibMode === "single" && (
+                <div className="space-y-2">
+                  {filteredSingles.map((single) => (
+                    <div
+                      key={single.id}
+                      className="border border-[#E0E0E0] rounded-lg overflow-hidden bg-[#FAFAFA]"
+                    >
+                      <div className="px-4 py-3">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex-1 min-w-0">
+                            <p className="text-[8px] tracking-[0.12em] uppercase text-[#888] font-semibold mb-1.5">
+                              {single.pilar}
+                            </p>
+                            <p
+                              className="font-[family-name:var(--font-display)] text-[#0A0A0A] uppercase leading-tight mb-1.5"
+                              style={{ fontSize: "12px", letterSpacing: "0.02em", whiteSpace: "pre-line" }}
+                            >
+                              {single.title}
+                            </p>
+                            <p className="text-[10px] text-[#777] leading-relaxed line-clamp-2 mb-1.5">
+                              {single.subtitle}
+                            </p>
+                            <p className="text-[8px] tracking-[0.1em] uppercase text-[#AAA] font-semibold">
+                              CTA: {single.cta}
+                            </p>
+                          </div>
+                          <button
+                            onClick={() => {
+                              onUpdateSlide({ title: single.title, subtitle: single.subtitle, tag: "VERSAVISUAL" });
+                              setTab("texto");
+                            }}
+                            className="flex-shrink-0 px-3 py-2 rounded-md bg-[#0A0A0A] text-white text-[9px] tracking-[0.1em] uppercase font-semibold hover:bg-[#1A1A1A] transition-all"
+                          >
+                            Aplicar
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
+          );
+        })()}
 
         {/* ─── ANIMAÇÃO TAB ──────────────────────────────────────────────── */}
         {tab === "animacao" && (

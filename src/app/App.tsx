@@ -3,6 +3,7 @@ import { TemplateSelector } from "./components/TemplateSelector";
 import { TemplateEditor } from "./components/TemplateEditor";
 import { TemplatePreview } from "./components/TemplatePreview";
 import { Header } from "./components/Header";
+import type { ContentSlide } from "./data/contentLibrary";
 
 export type TextPosition = "top" | "center" | "bottom";
 
@@ -163,6 +164,27 @@ function App() {
     });
   }, []);
 
+  const handleApplyCarousel = useCallback((contentSlides: ContentSlide[]) => {
+    setProject((prev) => {
+      const newSlides: SlideData[] = contentSlides.map((cs, i) => ({
+        id: `slide-${Date.now()}-${i}`,
+        title: cs.title,
+        subtitle: cs.subtitle,
+        imageUrl: prev.slides[i]?.imageUrl ?? "",
+        tag: cs.tag ?? "VERSAVISUAL",
+        overlayOpacity: prev.slides[i]?.overlayOpacity ?? 70,
+        textPosition: prev.slides[i]?.textPosition ?? "bottom",
+        imagePosition: prev.slides[i]?.imagePosition ?? "center",
+      }));
+      return {
+        ...prev,
+        isCarousel: newSlides.length > 1,
+        slides: newSlides,
+        currentSlideIndex: 0,
+      };
+    });
+  }, []);
+
   const currentSlide =
     project.slides[project.currentSlideIndex] || project.slides[0];
 
@@ -216,6 +238,7 @@ function App() {
               onSetOutputFormat={(f) =>
                 setProject((prev) => ({ ...prev, outputFormat: f }))
               }
+              onApplyCarousel={handleApplyCarousel}
             />
             <TemplatePreview
               project={project}
