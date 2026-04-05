@@ -1,7 +1,6 @@
 import { useRef, useState, useCallback, useEffect } from "react";
 import { Download, Play, ChevronLeft, ChevronRight, Layers } from "lucide-react";
 import html2canvas from "html2canvas";
-import { motion, AnimatePresence } from "motion/react";
 import { ProjectState, SlideData, AnimationType, OutputFormat, OUTPUT_FORMAT_DIMS } from "../App";
 import { T01DarkHeader } from "./templates/T01DarkHeader";
 import { T02BottomText } from "./templates/T02BottomText";
@@ -23,7 +22,7 @@ function convertOklchToRgb(oklch: string): string {
   // For production, you'd want a proper color space conversion library
   const lightness = L * 255;
   const gray = Math.round(lightness);
-  
+
   // Simple grayscale conversion for low chroma values
   if (C < 0.01) {
     return `rgb(${gray}, ${gray}, ${gray})`;
@@ -33,11 +32,11 @@ function convertOklchToRgb(oklch: string): string {
   const h = (H * Math.PI) / 180;
   const a = C * Math.cos(h);
   const b = C * Math.sin(h);
-  
+
   const r = Math.round(Math.max(0, Math.min(255, lightness + a * 127)));
   const g = Math.round(Math.max(0, Math.min(255, lightness)));
   const b_val = Math.round(Math.max(0, Math.min(255, lightness + b * 127)));
-  
+
   return `rgb(${r}, ${g}, ${b_val})`;
 }
 
@@ -48,16 +47,16 @@ function processElementForExport(element: HTMLElement) {
 
   elementsToProcess.forEach((el) => {
     if (!(el instanceof HTMLElement)) return;
-    
+
     const computed = window.getComputedStyle(el);
     const inlineStyle: string[] = [];
-    
+
     // Store original inline style
     originalStyles.push({ element: el, style: el.getAttribute('style') || '' });
 
     // Convert color properties
     const colorProps = ['color', 'backgroundColor', 'borderColor', 'borderTopColor', 'borderRightColor', 'borderBottomColor', 'borderLeftColor'];
-    
+
     colorProps.forEach((prop) => {
       const value = computed.getPropertyValue(prop);
       if (value && value.includes('oklch')) {
@@ -130,14 +129,20 @@ function getAnimationVariants(type: AnimationType, speed: number) {
 }
 
 // ── Template renderer ─────────────────────────────────────────────────────────
-function renderTemplate(templateId: string, slide: SlideData, w: number, h: number) {
+function renderTemplate(
+  templateId: string,
+  slide: SlideData,
+  w: number,
+  h: number,
+  globalAnimation: AnimationType
+) {
   switch (templateId) {
-    case "t01-dark-header": return <T01DarkHeader data={slide} width={w} height={h} />;
-    case "t02-bottom-text": return <T02BottomText data={slide} width={w} height={h} />;
-    case "t03-bw-editorial": return <T03BWEditorial data={slide} width={w} height={h} />;
-    case "t04-square-split": return <T04SquareSplit data={slide} width={w} height={h} />;
-    case "t05-magazine-wide": return <T05MagazineWide data={slide} width={w} height={h} />;
-    case "t06-minimal": return <T06Minimal data={slide} width={w} height={h} />;
+    case "t01-dark-header": return <T01DarkHeader data={slide} width={w} height={h} globalAnimation={globalAnimation} />;
+    case "t02-bottom-text": return <T02BottomText data={slide} width={w} height={h} globalAnimation={globalAnimation} />;
+    case "t03-bw-editorial": return <T03BWEditorial data={slide} width={w} height={h} globalAnimation={globalAnimation} />;
+    case "t04-square-split": return <T04SquareSplit data={slide} width={w} height={h} globalAnimation={globalAnimation} />;
+    case "t05-magazine-wide": return <T05MagazineWide data={slide} width={w} height={h} globalAnimation={globalAnimation} />;
+    case "t06-minimal": return <T06Minimal data={slide} width={w} height={h} globalAnimation={globalAnimation} />;
     default: return null;
   }
 }
@@ -154,45 +159,25 @@ function getTemplateInfo(outputFormat: OutputFormat) {
 export function TemplatePreview({ project, currentSlide, onSetCurrentSlide }: Props) {
   const previewRef = useRef<HTMLDivElement>(null);
   const [isExporting, setIsExporting] = useState(false);
+  const [isExportingVideo, setIsExportingVideo] = useState(false);
   const [exportingAll, setExportingAll] = useState(false);
-  const [isAnimating, setIsAnimating] = useState(false);
-  const [animKey, setAnimKey] = useState(0);
-  const [exportQuality, setExportQuality] = useState<"auto" | 2 | 4>("auto");
 
   // Calculate optimal export scale based on the uploaded image's native resolution
   const getExportScale = useCallback(() => {
-    if (exportQuality !== "auto") return exportQuality;
     if (!previewRef.current || !project.templateId) return 4;
 
     const info = getTemplateInfo(project.outputFormat);
     const templateCssWidth = info.width / 2; // e.g. 540
 
-    // Find the first img in the template and get its natural (original file) dimensions
     const img = previewRef.current.querySelector('img') as HTMLImageElement | null;
     if (img && img.naturalWidth > 0) {
-      // Scale so the exported pixel width >= the original photo's width
       const neededScale = Math.ceil(img.naturalWidth / templateCssWidth);
-      return Math.max(2, Math.min(neededScale, 6)); // clamp between 2x and 6x
+      return Math.max(2, Math.min(neededScale, 10));
     }
 
-    return 4; // fallback: 4x (2160p) when no image
-  }, [exportQuality, project.templateId, project.outputFormat]);
+    return 4;
+  }, [project.templateId, project.outputFormat]);
 
-  // Auto-play animation on template/slide change
-  useEffect(() => {
-    if (project.animation !== "none") {
-      setIsAnimating(true);
-      setAnimKey((k) => k + 1);
-    }
-  }, [project.currentSlideIndex, project.animation]);
-
-  const handlePlayAnimation = () => {
-    setIsAnimating(false);
-    setTimeout(() => {
-      setIsAnimating(true);
-      setAnimKey((k) => k + 1);
-    }, 50);
-  };
 
   // ── Export single slide ─────────────────────────────────────────────────
   const handleExport = useCallback(async () => {
@@ -204,15 +189,12 @@ export function TemplatePreview({ project, currentSlide, onSetCurrentSlide }: Pr
     let restore: (() => void) | null = null;
 
     try {
-      // Temporarily remove scaling from parent for clean capture
       if (parentMotionDiv) {
         parentMotionDiv.style.transform = "none";
       }
 
-      // Process OKLCH colors before export
       restore = processElementForExport(previewRef.current);
 
-      // Wait for all images to fully load
       const images = previewRef.current.querySelectorAll('img');
       await Promise.all(
         Array.from(images).map((img) => {
@@ -224,7 +206,6 @@ export function TemplatePreview({ project, currentSlide, onSetCurrentSlide }: Pr
         })
       );
 
-      // Additional wait to ensure render is complete
       await new Promise((resolve) => setTimeout(resolve, 300));
 
       const exportNode = previewRef.current.firstElementChild as HTMLElement;
@@ -264,7 +245,140 @@ export function TemplatePreview({ project, currentSlide, onSetCurrentSlide }: Pr
       }
       setIsExporting(false);
     }
-  }, [project, exportQuality, getExportScale]);
+  }, [project, getExportScale]);
+
+  const hasAnimation =
+    project.animation !== "none" ||
+    currentSlide.titleAnimation !== "none" ||
+    currentSlide.subtitleAnimation !== "none" ||
+    currentSlide.tagAnimation !== "none";
+
+  const getVideoMimeType = () => {
+    if (typeof MediaRecorder === "undefined") return null;
+    const candidates = [
+      "video/mp4",
+      "video/webm;codecs=vp9",
+      "video/webm;codecs=vp8",
+      "video/webm",
+    ];
+    return candidates.find((type) => MediaRecorder.isTypeSupported(type)) || null;
+  };
+
+  const handleExportVideo = useCallback(async () => {
+    if (!previewRef.current || !project.templateId) return;
+    const mimeType = getVideoMimeType();
+    if (!mimeType) {
+      alert("Seu navegador não suporta gravação de vídeo no formato usado pelo app.");
+      return;
+    }
+
+    setIsExportingVideo(true);
+    const parentMotionDiv = previewRef.current.parentElement as HTMLElement;
+    const originalTransform = parentMotionDiv?.style.transform || "";
+    let restore: (() => void) | null = null;
+
+    try {
+      if (parentMotionDiv) {
+        parentMotionDiv.style.transform = "none";
+      }
+
+      restore = processElementForExport(previewRef.current);
+
+      const images = previewRef.current.querySelectorAll('img');
+      await Promise.all(
+        Array.from(images).map((img) => {
+          if (img.complete) return Promise.resolve();
+          return new Promise((resolve) => {
+            img.onload = resolve;
+            img.onerror = resolve;
+          });
+        })
+      );
+
+      await new Promise((resolve) => setTimeout(resolve, 300));
+
+      const exportNode = previewRef.current.firstElementChild as HTMLElement;
+      if (!exportNode) throw new Error("No template element found");
+
+      const finalScale = getExportScale();
+      const width = Math.round(exportNode.offsetWidth * finalScale);
+      const height = Math.round(exportNode.offsetHeight * finalScale);
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) throw new Error("Unable to get canvas context");
+
+      const fps = 12;
+      const delays = [
+        currentSlide.titleAnimationDelay ?? 0,
+        currentSlide.subtitleAnimationDelay ?? 0,
+        currentSlide.tagAnimationDelay ?? 0,
+      ];
+      const durations = [
+        currentSlide.titleAnimationDuration ?? 1.1,
+        currentSlide.subtitleAnimationDuration ?? 1.1,
+        currentSlide.tagAnimationDuration ?? 0.9,
+      ];
+      const videoDuration = Math.max(...delays.map((delay, index) => delay + durations[index]), 1.8);
+      const frameCount = Math.ceil(videoDuration * fps);
+
+      const stream = canvas.captureStream(fps);
+      const recorder = new MediaRecorder(stream, { mimeType });
+      const chunks: Blob[] = [];
+      recorder.ondataavailable = (event) => {
+        if (event.data.size) chunks.push(event.data);
+      };
+
+      const recorderStopped = new Promise<void>((resolve) => {
+        recorder.onstop = () => resolve();
+      });
+
+      recorder.start();
+      for (let frame = 0; frame < frameCount; frame += 1) {
+        const snapshot = await html2canvas(exportNode, {
+          scale: finalScale,
+          backgroundColor: "#0A0A0A",
+          logging: false,
+          useCORS: true,
+          allowTaint: false,
+          imageTimeout: 0,
+          removeContainer: true,
+          foreignObjectRendering: false,
+          width: exportNode.offsetWidth,
+          height: exportNode.offsetHeight,
+          windowWidth: exportNode.offsetWidth,
+          windowHeight: exportNode.offsetHeight,
+        });
+
+        ctx.clearRect(0, 0, width, height);
+        ctx.drawImage(snapshot, 0, 0, width, height);
+        await new Promise((resolve) => setTimeout(resolve, 1000 / fps));
+      }
+
+      recorder.stop();
+      await recorderStopped;
+
+      const blob = new Blob(chunks, { type: mimeType });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      const slideLabel = project.isCarousel ? `-slide-${project.currentSlideIndex + 1}` : "";
+      const extension = mimeType.includes("mp4") ? "mp4" : "webm";
+      link.download = `versavisual-${project.templateId}${slideLabel}-${Date.now()}.${extension}`;
+      link.href = url;
+      link.click();
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Video export error:", error);
+      alert("Falha ao exportar vídeo. Tente novamente ou use um navegador com suporte a MediaRecorder.");
+    } finally {
+      if (restore) restore();
+      if (parentMotionDiv) {
+        parentMotionDiv.style.transform = originalTransform;
+      }
+      setIsExportingVideo(false);
+    }
+  }, [project, currentSlide, getExportScale]);
 
   // ── Export all slides (carousel) ─────────────────────────────────────────
   const handleExportAll = useCallback(async () => {
@@ -338,15 +452,16 @@ export function TemplatePreview({ project, currentSlide, onSetCurrentSlide }: Pr
     }
 
     setExportingAll(false);
-  }, [project, exportQuality, onSetCurrentSlide, getExportScale]);
+  }, [project, onSetCurrentSlide, getExportScale]);
 
   if (!project.templateId) return null;
 
   const info = getTemplateInfo(project.outputFormat);
   const variants = getAnimationVariants(project.animation, project.animationSpeed);
-  const currentScale = exportQuality === "auto" ? "Auto" : exportQuality;
-  const displayScale = exportQuality === "auto" ? 4 : exportQuality;
-  const exportPx = info ? `${info.width * displayScale / 2}×${info.height * displayScale / 2}px` : "";
+  const finalScale = getExportScale();
+  const exportPx = info
+    ? `${Math.round((info.width / 2) * finalScale)}×${Math.round((info.height / 2) * finalScale)}px`
+    : "";
 
   return (
     <div className="space-y-4 sm:space-y-5" id="export">
@@ -363,43 +478,32 @@ export function TemplatePreview({ project, currentSlide, onSetCurrentSlide }: Pr
         </div>
 
         <div className="flex items-center gap-2 flex-wrap w-full sm:w-auto">
-          {/* Quality toggle */}
-          <div className="flex rounded-lg overflow-hidden border border-[#E0E0E0] flex-shrink-0">
-            {(["auto", 2, 4] as const).map((q) => (
-              <button
-                key={String(q)}
-                onClick={() => setExportQuality(q)}
-                className={`px-2.5 sm:px-3 py-1.5 sm:py-2 text-[8px] sm:text-[9px] tracking-[0.12em] sm:tracking-[0.15em] uppercase font-semibold transition-all
-                  ${exportQuality === q
-                    ? "bg-[#0A0A0A] text-white"
-                    : "bg-white text-[#666] hover:bg-[#F5F5F5]"
-                  }`}
-              >
-                {q === "auto" ? "Full" : q === 2 ? "2× · 1080p" : "4× · 4K"}
-              </button>
-            ))}
+          <div className="rounded-2xl border border-[#E0E0E0] bg-white px-3 py-2 text-[9px] text-[#444]">
+            Exportação automática em máxima qualidade
           </div>
 
-          {/* Animation playback */}
-          {project.animation !== "none" && (
-            <button
-              onClick={handlePlayAnimation}
-              className="px-3 sm:px-4 py-1.5 sm:py-2 bg-[#1A3A5C] text-white rounded-lg hover:bg-[#243E5E] transition-all flex items-center gap-1.5 text-[9px] sm:text-[10px] tracking-[0.12em] sm:tracking-[0.14em] uppercase font-semibold"
-            >
-              <Play size={11} className="sm:w-[12px] sm:h-[12px]" />
-              <span className="hidden sm:inline">Play</span>
-            </button>
-          )}
+          {/* Animation playback is handled per text element in the editor */}
 
           {/* Export current */}
           <button
             onClick={handleExport}
-            disabled={isExporting}
+            disabled={isExporting || isExportingVideo}
             className="flex-1 sm:flex-initial px-4 sm:px-5 py-2 sm:py-2.5 bg-[#0A0A0A] text-white rounded-lg hover:bg-[#1A1A1A] transition-all flex items-center justify-center gap-1.5 text-[9px] sm:text-[10px] tracking-[0.14em] sm:tracking-[0.16em] uppercase font-semibold disabled:opacity-50 shadow-md"
           >
             <Download size={12} className="sm:w-[13px] sm:h-[13px]" />
             {isExporting ? "Exportando..." : "PNG"}
           </button>
+
+          {hasAnimation && (
+            <button
+              onClick={handleExportVideo}
+              disabled={isExportingVideo || isExporting}
+              className="flex-1 sm:flex-initial px-4 sm:px-5 py-2 sm:py-2.5 bg-[#0A0A0A] text-white rounded-lg hover:bg-[#1A1A1A] transition-all flex items-center justify-center gap-1.5 text-[9px] sm:text-[10px] tracking-[0.14em] sm:tracking-[0.16em] uppercase font-semibold disabled:opacity-50 shadow-md"
+            >
+              <Play size={12} className="sm:w-[13px] sm:h-[13px]" />
+              {isExportingVideo ? "Exportando..." : "Vídeo"}
+            </button>
+          )}
 
           {/* Export all slides */}
           {project.isCarousel && (
@@ -420,40 +524,34 @@ export function TemplatePreview({ project, currentSlide, onSetCurrentSlide }: Pr
         className="bg-[#141414] rounded-xl sm:rounded-2xl flex items-center justify-center overflow-hidden p-4 sm:p-6 lg:p-8"
         style={{ minHeight: "640px" }}
       >
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={`${animKey}-${project.currentSlideIndex}`}
-            {...(isAnimating && project.animation !== "none" ? variants : {})}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            width: `${info.width / 2}px`,
+            height: `${info.height / 2}px`,
+            transform: `scale(${Math.min(
+              520 / (info.width / 2),
+              680 / (info.height / 2)
+            )})`,
+            transformOrigin: "center center",
+          }}
+        >
+          {/* Export target — always renders at native template dimensions (e.g. 540×960) */}
+          <div
+            ref={previewRef}
+            className="shadow-2xl"
             style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              /* Visual-only scaling — this wrapper scales the preview for display 
-                 but the inner previewRef stays at native template size for export */
               width: `${info.width / 2}px`,
               height: `${info.height / 2}px`,
-              transform: `scale(${Math.min(
-                520 / (info.width / 2),
-                680 / (info.height / 2)
-              )})`,
-              transformOrigin: "center center",
+              overflow: "hidden",
+              flexShrink: 0,
             }}
           >
-            {/* Export target — always renders at native template dimensions (e.g. 540×960) */}
-            <div
-              ref={previewRef}
-              className="shadow-2xl"
-              style={{
-                width: `${info.width / 2}px`,
-                height: `${info.height / 2}px`,
-                overflow: "hidden",
-                flexShrink: 0,
-              }}
-            >
-              {renderTemplate(project.templateId, currentSlide, info.cssWidth, info.cssHeight)}
-            </div>
-          </motion.div>
-        </AnimatePresence>
+            {renderTemplate(project.templateId, currentSlide, info.cssWidth, info.cssHeight, project.animation)}
+          </div>
+        </div>
       </div>
 
       {/* ── Carousel navigation ───────────────────────────────────────────── */}
@@ -533,15 +631,15 @@ export function TemplatePreview({ project, currentSlide, onSetCurrentSlide }: Pr
         </div>
         <div>
           <p className="text-[11px] font-semibold text-[#0A0A0A] mb-1">
-            Export {exportQuality === "auto" ? "Full Quality" : `${exportQuality}×`} → {exportPx}
+            Exportação em máxima qualidade → {exportPx}
           </p>
           <p className="text-[11px] text-[#888] leading-relaxed">
-            {exportQuality === "auto"
-              ? "Modo Full: calcula automaticamente a escala para preservar a resolução original da foto de upload."
-              : project.isCarousel
-                ? `"PNG" exporta o slide atual. "Todos" exporta os ${project.slides.length} slides individualmente.`
-                : "PNG em alta resolução pronto para Instagram, Stories e posts editoriais."}
-            {" "}Imagens locais e Unsplash são exportadas com alta fidelidade (useCORS).
+            {hasAnimation
+              ? "Exporta animação em vídeo quando há movimento, ou PNG estático para layouts sem animação."
+              : "PNG nativo com escala automática para preservar a resolução original da imagem e manter nitidez no texto e overlay."}
+            {project.isCarousel
+              ? ` Exporta o slide atual ou todos os ${project.slides.length} slides individualmente.`
+              : " Pronto para redes sociais com alta fidelidade editorial."}
           </p>
         </div>
       </div>

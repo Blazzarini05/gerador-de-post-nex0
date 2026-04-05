@@ -1,15 +1,37 @@
-import { SlideData, TextPosition } from "../../App";
+import { motion } from "motion/react";
+import { SlideData, TextPosition, AnimationType } from "../../App";
+import { getTextAnimationVariants } from "../animationUtils";
 
 interface Props {
   data: SlideData;
   width?: number;
   height?: number;
+  globalAnimation?: AnimationType;
 }
 
-export function T05MagazineWide({ data, width = 960, height = 540 }: Props) {
+export function T05MagazineWide({ data, width = 960, height = 540, globalAnimation }: Props) {
   const overlayOpacity = (data.overlayOpacity ?? 70) / 100;
   const pos: TextPosition = data.textPosition ?? "bottom";
-  const bgPos = data.imagePosition ?? "center";
+  const bgScale = data.imageScale ?? 1;
+  const bgX = Math.max(-45, Math.min(45, data.imageOffsetX ?? 0));
+  const bgY = Math.max(-45, Math.min(45, data.imageOffsetY ?? 0));
+  const bgPos = `${50 + bgX}% ${50 + bgY}%`;
+  const bgSize = `${Math.max(100, Math.min(300, bgScale * 100))}%`;
+  const titleAnimation = getTextAnimationVariants(
+    data.titleAnimation ?? globalAnimation ?? "none",
+    data.titleAnimationDuration ?? 1.1,
+    data.titleAnimationDelay ?? 0
+  );
+  const subtitleAnimation = getTextAnimationVariants(
+    data.subtitleAnimation ?? globalAnimation ?? "none",
+    data.subtitleAnimationDuration ?? 1.1,
+    data.subtitleAnimationDelay ?? 0.2
+  );
+  const tagAnimation = getTextAnimationVariants(
+    data.tagAnimation ?? globalAnimation ?? "none",
+    data.tagAnimationDuration ?? 0.9,
+    data.tagAnimationDelay ?? 0.4
+  );
 
   const textAlign =
     pos === "top" ? "flex-start" : pos === "center" ? "center" : "flex-end";
@@ -26,7 +48,7 @@ export function T05MagazineWide({ data, width = 960, height = 540 }: Props) {
             className="absolute inset-0 z-0"
             style={{
               backgroundImage: `url(${data.imageUrl})`,
-              backgroundSize: "cover",
+              backgroundSize: bgSize,
               backgroundPosition: bgPos,
             }}
           />
@@ -50,30 +72,36 @@ export function T05MagazineWide({ data, width = 960, height = 540 }: Props) {
         style={{ maxWidth: "55%", justifyContent: textAlign }}
       >
         {data.tag && (
-          <p
+          <motion.p
+            initial={tagAnimation.initial}
+            animate={tagAnimation.animate}
             className="tracking-[0.32em] uppercase mb-3 font-medium"
             style={{ fontSize: "8px", color: "rgba(255,255,255,0.35)" }}
           >
             {data.tag}
-          </p>
+          </motion.p>
         )}
         {data.title && (
-          <h1
+          <motion.h1
+            initial={titleAnimation.initial}
+            animate={titleAnimation.animate}
             className="font-[family-name:var(--font-display)] text-white uppercase leading-[0.90]"
             style={{ fontSize: "43px", letterSpacing: "0.015em", whiteSpace: "pre-line" }}
           >
             {data.title}
-          </h1>
+          </motion.h1>
         )}
         {data.subtitle && (
           <>
             <div className="my-4" style={{ width: "36px", height: "1px", background: "rgba(255,255,255,0.30)" }} />
-            <p
+            <motion.p
+              initial={subtitleAnimation.initial}
+              animate={subtitleAnimation.animate}
               className="font-light leading-[1.55]"
               style={{ fontSize: "14px", color: "rgba(255,255,255,0.70)", maxWidth: "300px" }}
             >
               {data.subtitle}
-            </p>
+            </motion.p>
           </>
         )}
       </div>

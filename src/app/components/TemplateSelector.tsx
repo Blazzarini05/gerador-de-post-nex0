@@ -8,7 +8,7 @@ interface Props {
 const templates = [
   {
     id: "t01-dark-header" as TemplateId,
-    name: "Dark Header",
+    name: "Cabeçalho Escuro",
     code: "T01",
     format: "Story",
     ratio: "9:16",
@@ -18,7 +18,7 @@ const templates = [
   },
   {
     id: "t02-bottom-text" as TemplateId,
-    name: "Bottom Text",
+    name: "Texto Inferior",
     code: "T02",
     format: "Story",
     ratio: "9:16",
@@ -28,7 +28,7 @@ const templates = [
   },
   {
     id: "t03-bw-editorial" as TemplateId,
-    name: "B&W Editorial",
+    name: "Editorial P&B Quadrado",
     code: "T03",
     format: "Story",
     ratio: "9:16",
@@ -38,7 +38,7 @@ const templates = [
   },
   {
     id: "t04-square-split" as TemplateId,
-    name: "Square Split",
+    name: "Divisão Quadrada",
     code: "T04",
     format: "Post",
     ratio: "1:1",
@@ -48,7 +48,7 @@ const templates = [
   },
   {
     id: "t05-magazine-wide" as TemplateId,
-    name: "Magazine Wide",
+    name: "Revista Plot",
     code: "T05",
     format: "Wide",
     ratio: "16:9",
@@ -58,7 +58,7 @@ const templates = [
   },
   {
     id: "t06-minimal" as TemplateId,
-    name: "Minimal Statement",
+    name: "Declaração Minimalista",
     code: "T06",
     format: "Story",
     ratio: "9:16",

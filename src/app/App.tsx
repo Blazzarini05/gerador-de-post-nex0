@@ -15,7 +15,18 @@ export interface SlideData {
   tag?: string;
   overlayOpacity?: number; // 0-100 percentage
   textPosition?: TextPosition; // vertical text placement
-  imagePosition?: string; // CSS background-position value e.g. "center", "top left"
+  imageScale?: number; // zoom % for background image
+  imageOffsetX?: number; // horizontal image repositioning
+  imageOffsetY?: number; // vertical image repositioning
+  titleAnimation?: AnimationType;
+  subtitleAnimation?: AnimationType;
+  tagAnimation?: AnimationType;
+  titleAnimationDelay?: number;
+  subtitleAnimationDelay?: number;
+  tagAnimationDelay?: number;
+  titleAnimationDuration?: number;
+  subtitleAnimationDuration?: number;
+  tagAnimationDuration?: number;
 }
 
 export type AnimationType =
@@ -37,8 +48,8 @@ export type OutputFormat = "9:16" | "4:5" | "1:1" | "16:9";
 
 export const OUTPUT_FORMAT_DIMS: Record<OutputFormat, { w: number; h: number; label: string }> = {
   "9:16": { w: 540, h: 960, label: "Story 9:16" },
-  "4:5":  { w: 540, h: 675, label: "Feed 4:5" },
-  "1:1":  { w: 540, h: 540, label: "Post 1:1" },
+  "4:5": { w: 540, h: 675, label: "Feed 4:5" },
+  "1:1": { w: 540, h: 540, label: "Post 1:1" },
   "16:9": { w: 960, h: 540, label: "Wide 16:9" },
 };
 
@@ -67,7 +78,18 @@ export const createDefaultSlide = (index: number = 0): SlideData => ({
   tag: "VERSAVISUAL",
   overlayOpacity: 70,
   textPosition: "bottom",
-  imagePosition: "center",
+  imageScale: 1,
+  imageOffsetX: 0,
+  imageOffsetY: 0,
+  titleAnimation: "none",
+  subtitleAnimation: "none",
+  tagAnimation: "none",
+  titleAnimationDelay: 0,
+  subtitleAnimationDelay: 0.2,
+  tagAnimationDelay: 0.4,
+  titleAnimationDuration: 1.1,
+  subtitleAnimationDuration: 1.1,
+  tagAnimationDuration: 0.9,
 });
 
 function App() {
@@ -174,7 +196,18 @@ function App() {
         tag: cs.tag ?? "VERSAVISUAL",
         overlayOpacity: prev.slides[i]?.overlayOpacity ?? 70,
         textPosition: prev.slides[i]?.textPosition ?? "bottom",
-        imagePosition: prev.slides[i]?.imagePosition ?? "center",
+        imageScale: prev.slides[i]?.imageScale ?? 1,
+        imageOffsetX: prev.slides[i]?.imageOffsetX ?? 0,
+        imageOffsetY: prev.slides[i]?.imageOffsetY ?? 0,
+        titleAnimation: prev.slides[i]?.titleAnimation ?? "none",
+        subtitleAnimation: prev.slides[i]?.subtitleAnimation ?? "none",
+        tagAnimation: prev.slides[i]?.tagAnimation ?? "none",
+        titleAnimationDelay: prev.slides[i]?.titleAnimationDelay ?? 0,
+        subtitleAnimationDelay: prev.slides[i]?.subtitleAnimationDelay ?? 0.2,
+        tagAnimationDelay: prev.slides[i]?.tagAnimationDelay ?? 0.4,
+        titleAnimationDuration: prev.slides[i]?.titleAnimationDuration ?? 1.1,
+        subtitleAnimationDuration: prev.slides[i]?.subtitleAnimationDuration ?? 1.1,
+        tagAnimationDuration: prev.slides[i]?.tagAnimationDuration ?? 0.9,
       }));
       return {
         ...prev,
