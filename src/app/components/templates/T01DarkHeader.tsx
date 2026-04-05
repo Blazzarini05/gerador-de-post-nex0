@@ -1,4 +1,4 @@
-import { SlideData } from "../../App";
+import { SlideData, TextPosition } from "../../App";
 
 interface Props {
   data: SlideData;
@@ -6,8 +6,21 @@ interface Props {
   height?: number;
 }
 
+function getHeaderPosition(pos: TextPosition): React.CSSProperties {
+  switch (pos) {
+    case "top":
+      return { top: 0 };
+    case "center":
+      return { top: "50%", transform: "translateY(-50%)" };
+    case "bottom":
+    default:
+      return { bottom: 0 };
+  }
+}
+
 export function T01DarkHeader({ data, width = 540, height = 960 }: Props) {
   const overlayOpacity = (data.overlayOpacity ?? 70) / 100;
+  const pos: TextPosition = data.textPosition ?? "top";
 
   return (
     <div
@@ -16,17 +29,13 @@ export function T01DarkHeader({ data, width = 540, height = 960 }: Props) {
     >
       {/* Background photo */}
       {data.imageUrl ? (
-        <>
-          <img src={data.imageUrl} alt="" style={{ display: 'none' }} crossOrigin="anonymous" />
-          <div
-            className="absolute inset-0 z-0"
-            style={{
-              backgroundImage: `url(${data.imageUrl})`,
-              backgroundSize: "cover",
-              backgroundPosition: "center",
-            }}
-          />
-        </>
+        <img
+          src={data.imageUrl}
+          alt=""
+          crossOrigin="anonymous"
+          className="absolute inset-0 w-full h-full"
+          style={{ objectFit: "cover", objectPosition: "center" }}
+        />
       ) : (
         <div
           className="absolute inset-0 z-0"
@@ -43,10 +52,14 @@ export function T01DarkHeader({ data, width = 540, height = 960 }: Props) {
         style={{ background: `rgba(10,10,10,${overlayOpacity * 0.9})` }}
       />
 
-      {/* Dark header overlay — hard rectangle */}
+      {/* Dark header block — repositionable */}
       <div
-        className="absolute top-0 left-0 right-0 z-20 flex flex-col items-center justify-center px-10 py-10 pointer-events-none"
-        style={{ background: `rgba(10,10,10,${Math.min(0.95, overlayOpacity + 0.2)})`, minHeight: "290px" }}
+        className="absolute left-0 right-0 z-20 flex flex-col items-center justify-center px-10 py-10 pointer-events-none"
+        style={{
+          ...getHeaderPosition(pos),
+          background: `rgba(10,10,10,${Math.min(0.95, overlayOpacity + 0.2)})`,
+          minHeight: "290px",
+        }}
       >
         {/* Tag */}
         {data.tag && (

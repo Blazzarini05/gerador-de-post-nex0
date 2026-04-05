@@ -1,4 +1,4 @@
-import { SlideData } from "../../App";
+import { SlideData, TextPosition } from "../../App";
 
 interface Props {
   data: SlideData;
@@ -6,8 +6,33 @@ interface Props {
   height?: number;
 }
 
+function getTextBlockStyle(pos: TextPosition, overlayOpacity: number): React.CSSProperties {
+  switch (pos) {
+    case "top":
+      return { top: 0, paddingTop: "56px", paddingBottom: "32px" };
+    case "center":
+      return { top: "50%", transform: "translateY(-50%)", paddingTop: "32px", paddingBottom: "32px" };
+    case "bottom":
+    default:
+      return { bottom: 0, paddingBottom: "48px", paddingTop: "32px" };
+  }
+}
+
+function getGradientStyle(pos: TextPosition, overlayOpacity: number): string {
+  switch (pos) {
+    case "top":
+      return `linear-gradient(180deg, rgba(10,10,10,${overlayOpacity * 0.92}) 0%, rgba(10,10,10,${overlayOpacity * 0.65}) 38%, rgba(10,10,10,${overlayOpacity * 0.15}) 65%, transparent 100%)`;
+    case "center":
+      return `radial-gradient(ellipse at center, rgba(10,10,10,${overlayOpacity * 0.75}) 0%, rgba(10,10,10,${overlayOpacity * 0.35}) 55%, transparent 100%)`;
+    case "bottom":
+    default:
+      return `linear-gradient(0deg, rgba(10,10,10,${overlayOpacity * 0.92}) 0%, rgba(10,10,10,${overlayOpacity * 0.65}) 38%, rgba(10,10,10,${overlayOpacity * 0.15}) 65%, transparent 100%)`;
+  }
+}
+
 export function T02BottomText({ data, width = 540, height = 960 }: Props) {
   const overlayOpacity = (data.overlayOpacity ?? 70) / 100;
+  const pos: TextPosition = data.textPosition ?? "bottom";
 
   return (
     <div
@@ -16,17 +41,13 @@ export function T02BottomText({ data, width = 540, height = 960 }: Props) {
     >
       {/* Full-bleed background photo */}
       {data.imageUrl ? (
-        <>
-          <img src={data.imageUrl} alt="" style={{ display: 'none' }} crossOrigin="anonymous" />
-          <div
-            className="absolute inset-0 z-0"
-            style={{
-              backgroundImage: `url(${data.imageUrl})`,
-              backgroundSize: "cover",
-              backgroundPosition: "center",
-            }}
-          />
-        </>
+        <img
+          src={data.imageUrl}
+          alt=""
+          crossOrigin="anonymous"
+          className="absolute inset-0 w-full h-full"
+          style={{ objectFit: "cover", objectPosition: "center" }}
+        />
       ) : (
         <div
           className="absolute inset-0 z-0"
@@ -37,18 +58,16 @@ export function T02BottomText({ data, width = 540, height = 960 }: Props) {
         />
       )}
 
-      {/* Gradient vignette — bottom to top with variable opacity */}
+      {/* Gradient vignette */}
       <div
         className="absolute inset-0 z-10 pointer-events-none"
-        style={{
-          background:
-            `linear-gradient(0deg, rgba(10,10,10,${overlayOpacity * 0.92}) 0%, rgba(10,10,10,${overlayOpacity * 0.65}) 38%, rgba(10,10,10,${overlayOpacity * 0.15}) 65%, transparent 100%)`,
-        }}
+        style={{ background: getGradientStyle(pos, overlayOpacity) }}
       />
 
-      {/* Text block — bottom left */}
+      {/* Text block — repositionable */}
       <div
-        className="absolute bottom-0 left-0 right-0 px-9 pb-12 pt-8 z-20 pointer-events-none"
+        className="absolute left-0 right-0 px-9 z-20 pointer-events-none"
+        style={getTextBlockStyle(pos, overlayOpacity)}
       >
         {/* Tag */}
         {data.tag && (

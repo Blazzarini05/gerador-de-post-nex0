@@ -14,7 +14,7 @@ import {
   Layers,
   Droplet,
 } from "lucide-react";
-import { ProjectState, SlideData, AnimationType, OutputFormat } from "../App";
+import { ProjectState, SlideData, AnimationType, OutputFormat, TextPosition } from "../App";
 
 // ── AI Content Database — VERSAVISUAL 6 Pilares de Conteúdo ─────────────────
 type StorySequence = Array<{ title: string; subtitle: string; progression: string }>;
@@ -418,6 +418,31 @@ export function TemplateEditor({
                 className={inputClass}
                 placeholder="VERSA VISUAL · 2025 · etc..."
               />
+            </div>
+
+            {/* Text Position */}
+            <div className="pt-3 border-t border-[#EBEBEB]">
+              <label className={labelClass}>Posição do Texto</label>
+              <div className="grid grid-cols-3 gap-2">
+                {([
+                  { pos: "top" as TextPosition, label: "Topo", icon: "▲" },
+                  { pos: "center" as TextPosition, label: "Centro", icon: "●" },
+                  { pos: "bottom" as TextPosition, label: "Base", icon: "▼" },
+                ]).map(({ pos, label, icon }) => (
+                  <button
+                    key={pos}
+                    onClick={() => onUpdateSlide({ textPosition: pos })}
+                    className={`flex flex-col items-center gap-1 py-2.5 px-3 rounded-lg border-2 transition-all text-[10px] font-semibold tracking-[0.08em] uppercase
+                      ${(currentSlide.textPosition ?? "bottom") === pos
+                        ? "border-[#0A0A0A] bg-[#0A0A0A] text-white"
+                        : "border-[#E0E0E0] bg-[#FAFAFA] text-[#555] hover:border-[#0A0A0A]"
+                      }`}
+                  >
+                    <span className="text-sm leading-none">{icon}</span>
+                    {label}
+                  </button>
+                ))}
+              </div>
             </div>
 
             {/* Quick presets */}

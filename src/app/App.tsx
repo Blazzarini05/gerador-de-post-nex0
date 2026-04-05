@@ -4,6 +4,8 @@ import { TemplateEditor } from "./components/TemplateEditor";
 import { TemplatePreview } from "./components/TemplatePreview";
 import { Header } from "./components/Header";
 
+export type TextPosition = "top" | "center" | "bottom";
+
 export interface SlideData {
   id: string;
   title: string;
@@ -11,6 +13,7 @@ export interface SlideData {
   imageUrl: string;
   tag?: string;
   overlayOpacity?: number; // 0-100 percentage
+  textPosition?: TextPosition; // vertical text placement
 }
 
 export type AnimationType =
@@ -61,6 +64,7 @@ export const createDefaultSlide = (index: number = 0): SlideData => ({
   imageUrl: "",
   tag: "VERSAVISUAL",
   overlayOpacity: 70,
+  textPosition: "bottom",
 });
 
 function App() {

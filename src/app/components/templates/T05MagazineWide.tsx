@@ -1,4 +1,4 @@
-import { SlideData } from "../../App";
+import { SlideData, TextPosition } from "../../App";
 
 interface Props {
   data: SlideData;
@@ -6,8 +6,18 @@ interface Props {
   height?: number;
 }
 
+function getTextAlign(pos: TextPosition): string {
+  switch (pos) {
+    case "top": return "flex-start";
+    case "center": return "center";
+    case "bottom":
+    default: return "flex-end";
+  }
+}
+
 export function T05MagazineWide({ data, width = 960, height = 540 }: Props) {
   const overlayOpacity = (data.overlayOpacity ?? 70) / 100;
+  const pos: TextPosition = data.textPosition ?? "bottom";
 
   return (
     <div
@@ -16,17 +26,13 @@ export function T05MagazineWide({ data, width = 960, height = 540 }: Props) {
     >
       {/* Background photo */}
       {data.imageUrl ? (
-        <>
-          <img src={data.imageUrl} alt="" style={{ display: 'none' }} crossOrigin="anonymous" />
-          <div
-            className="absolute inset-0 z-0"
-            style={{
-              backgroundImage: `url(${data.imageUrl})`,
-              backgroundSize: "cover",
-              backgroundPosition: "center",
-            }}
-          />
-        </>
+        <img
+          src={data.imageUrl}
+          alt=""
+          crossOrigin="anonymous"
+          className="absolute inset-0 w-full h-full"
+          style={{ objectFit: "cover", objectPosition: "center" }}
+        />
       ) : (
         <div
           className="absolute inset-0 z-0"
@@ -46,10 +52,10 @@ export function T05MagazineWide({ data, width = 960, height = 540 }: Props) {
         }}
       />
 
-      {/* Content — left aligned */}
+      {/* Content — left aligned, vertically repositionable */}
       <div
-        className="absolute inset-0 z-20 flex flex-col justify-end px-14 py-11 pointer-events-none"
-        style={{ maxWidth: "55%" }}
+        className="absolute inset-0 z-20 flex flex-col px-14 py-11 pointer-events-none"
+        style={{ maxWidth: "55%", justifyContent: getTextAlign(pos) }}
       >
         {/* Tag */}
         {data.tag && (

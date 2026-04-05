@@ -1,4 +1,4 @@
-import { SlideData } from "../../App";
+import { SlideData, TextPosition } from "../../App";
 
 interface Props {
   data: SlideData;
@@ -8,6 +8,10 @@ interface Props {
 
 export function T06Minimal({ data, width = 540, height = 960 }: Props) {
   const overlayOpacity = (data.overlayOpacity ?? 70) / 100;
+  const pos: TextPosition = data.textPosition ?? "center";
+
+  const contentJustify =
+    pos === "top" ? "flex-start" : pos === "center" ? "center" : "flex-end";
 
   return (
     <div
@@ -16,17 +20,13 @@ export function T06Minimal({ data, width = 540, height = 960 }: Props) {
     >
       {/* Background photo (if provided) */}
       {data.imageUrl && (
-        <>
-          <img src={data.imageUrl} alt="" style={{ display: 'none' }} crossOrigin="anonymous" />
-          <div
-            className="absolute inset-0 z-0"
-            style={{
-              backgroundImage: `url(${data.imageUrl})`,
-              backgroundSize: "cover",
-              backgroundPosition: "center",
-            }}
-          />
-        </>
+        <img
+          src={data.imageUrl}
+          alt=""
+          crossOrigin="anonymous"
+          className="absolute inset-0 w-full h-full"
+          style={{ objectFit: "cover", objectPosition: "center" }}
+        />
       )}
 
       {/* Dark overlay to maintain text readability */}
@@ -46,8 +46,11 @@ export function T06Minimal({ data, width = 540, height = 960 }: Props) {
         {data.tag || "VERSAVISUAL"}
       </div>
 
-      {/* Center — Main content */}
-      <div className="flex-1 flex items-center relative z-20 pointer-events-none">
+      {/* Main content area — vertically repositionable */}
+      <div
+        className="flex-1 flex relative z-20 pointer-events-none"
+        style={{ alignItems: contentJustify, paddingTop: "8px", paddingBottom: "8px" }}
+      >
         <div>
           {/* Title */}
           {data.title && (

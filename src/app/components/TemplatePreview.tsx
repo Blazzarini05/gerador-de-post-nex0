@@ -418,7 +418,7 @@ export function TemplatePreview({ project, currentSlide, onSetCurrentSlide }: Pr
       {/* ── Preview stage ─────────────────────────────────────────────────── */}
       <div
         className="bg-[#141414] rounded-xl sm:rounded-2xl flex items-center justify-center overflow-hidden p-4 sm:p-6 lg:p-8"
-        style={{ minHeight: "480px" }}
+        style={{ minHeight: "640px" }}
       >
         <AnimatePresence mode="wait">
           <motion.div
@@ -433,8 +433,8 @@ export function TemplatePreview({ project, currentSlide, onSetCurrentSlide }: Pr
               width: `${info.width / 2}px`,
               height: `${info.height / 2}px`,
               transform: `scale(${Math.min(
-                440 / (info.width / 2),
-                520 / (info.height / 2)
+                520 / (info.width / 2),
+                680 / (info.height / 2)
               )})`,
               transformOrigin: "center center",
             }}

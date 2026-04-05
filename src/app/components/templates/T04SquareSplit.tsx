@@ -1,4 +1,4 @@
-import { SlideData } from "../../App";
+import { SlideData, TextPosition } from "../../App";
 
 interface Props {
   data: SlideData;
@@ -8,6 +8,10 @@ interface Props {
 
 export function T04SquareSplit({ data, width = 540, height = 540 }: Props) {
   const overlayOpacity = (data.overlayOpacity ?? 70) / 100;
+  const pos: TextPosition = data.textPosition ?? "bottom";
+
+  const textJustify =
+    pos === "top" ? "flex-start" : pos === "center" ? "center" : "flex-end";
 
   return (
     <div
@@ -22,17 +26,13 @@ export function T04SquareSplit({ data, width = 540, height = 540 }: Props) {
       {/* Photo section — top 60% */}
       <div className="relative overflow-hidden z-0">
         {data.imageUrl ? (
-          <>
-            <img src={data.imageUrl} alt="" style={{ display: 'none' }} crossOrigin="anonymous" />
-            <div
-              className="absolute inset-0 z-0"
-              style={{
-                backgroundImage: `url(${data.imageUrl})`,
-                backgroundSize: "cover",
-                backgroundPosition: "center",
-              }}
-            />
-          </>
+          <img
+            src={data.imageUrl}
+            alt=""
+            crossOrigin="anonymous"
+            className="absolute inset-0 w-full h-full"
+            style={{ objectFit: "cover", objectPosition: "center" }}
+          />
         ) : (
           <div
             className="absolute inset-0 z-0"
@@ -55,7 +55,8 @@ export function T04SquareSplit({ data, width = 540, height = 540 }: Props) {
 
       {/* Text section — bottom 40% */}
       <div
-        className="bg-[#0A0A0A] px-8 py-6 flex flex-col justify-center relative z-20 pointer-events-none"
+        className="bg-[#0A0A0A] px-8 py-6 flex flex-col relative z-20 pointer-events-none"
+        style={{ justifyContent: textJustify }}
       >
         {/* Tag */}
         {data.tag && (
