@@ -47,10 +47,10 @@ export type TemplateId =
 export type OutputFormat = "9:16" | "4:5" | "1:1" | "16:9";
 
 export const OUTPUT_FORMAT_DIMS: Record<OutputFormat, { w: number; h: number; label: string }> = {
-  "9:16": { w: 540, h: 960, label: "Story 9:16" },
-  "4:5": { w: 540, h: 675, label: "Feed 4:5" },
-  "1:1": { w: 540, h: 540, label: "Post 1:1" },
-  "16:9": { w: 960, h: 540, label: "Wide 16:9" },
+  "9:16": { w: 1080, h: 1920, label: "Story 9:16" },
+  "4:5": { w: 1080, h: 1350, label: "Feed 4:5" },
+  "1:1": { w: 1080, h: 1080, label: "Post 1:1" },
+  "16:9": { w: 1920, h: 1080, label: "Wide 16:9" },
 };
 
 export interface ProjectState {
@@ -252,7 +252,7 @@ function App() {
         />
 
         {project.templateId && (
-          <div className="mt-8 sm:mt-10 lg:mt-14 grid grid-cols-1 xl:grid-cols-[minmax(380px,440px)_1fr] gap-6 lg:gap-8 items-start">
+          <div className="mt-8 sm:mt-10 lg:mt-14 grid grid-cols-1 min-[1280px]:grid-cols-[minmax(360px,430px)_minmax(0,1fr)] gap-6 lg:gap-8 items-start">
             <TemplateEditor
               project={project}
               currentSlide={currentSlide}

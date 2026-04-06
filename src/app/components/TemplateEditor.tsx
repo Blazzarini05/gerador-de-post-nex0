@@ -317,8 +317,20 @@ export function TemplateEditor({
   const labelClass =
     "block text-[10px] tracking-[0.18em] uppercase text-[#888888] mb-2 font-medium";
 
+  const tabButtonClass =
+    "flex-1 min-w-[68px] py-3 sm:py-3.5 text-[9px] sm:text-[10px] tracking-[0.14em] sm:tracking-[0.16em] uppercase font-semibold transition-all flex flex-col items-center justify-center gap-0.5";
+
+  const softButtonClass =
+    "vv-btn-ghost min-h-10";
+
+  const iconButtonClass =
+    "vv-btn-icon h-10 w-10";
+
+  const chipButtonClass =
+    "vv-btn-chip";
+
   return (
-    <div className="bg-white rounded-xl border border-[#E0E0E0] overflow-hidden shadow-sm">
+    <div className="bg-white rounded-[28px] border border-[#E0E0E0] overflow-hidden shadow-sm">
       {/* ── Tab bar ──────────────────────────────────────────────────────── */}
       <div className="bg-[#0A0A0A] flex">
         {(
@@ -333,10 +345,10 @@ export function TemplateEditor({
           <button
             key={t.id}
             onClick={() => setTab(t.id)}
-            className={`flex-1 py-3 sm:py-3.5 text-[9px] sm:text-[10px] tracking-[0.14em] sm:tracking-[0.16em] uppercase font-semibold transition-all flex flex-col items-center gap-0.5
+            className={`${tabButtonClass}
               ${tab === t.id
                 ? "bg-white text-[#0A0A0A]"
-                : "text-[#555] hover:text-[#999]"
+                : "text-[#555] hover:bg-[#111111] hover:text-[#CFCFCF]"
               }`}
           >
             <span className="text-sm sm:text-base leading-none">{t.icon}</span>
@@ -346,7 +358,7 @@ export function TemplateEditor({
       </div>
 
       {/* ── Carousel header ──────────────────────────────────────────────── */}
-      <div className="border-b border-[#EBEBEB] px-4 sm:px-5 py-2.5 sm:py-3 bg-[#FAFAFA] flex items-center justify-between gap-2 sm:gap-3 flex-wrap">
+      <div className="border-b border-[#EBEBEB] px-4 sm:px-5 py-3 bg-[#FAFAFA] flex items-center justify-between gap-2 sm:gap-3 flex-wrap">
         <div className="flex items-center gap-2 sm:gap-2.5">
           <Layers size={13} className="text-[#888] sm:w-[14px] sm:h-[14px]" />
           <span className="text-[9px] sm:text-[10px] tracking-[0.15em] sm:tracking-[0.18em] uppercase text-[#888] font-medium">
@@ -355,12 +367,12 @@ export function TemplateEditor({
               : "Post Único"}
           </span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex w-full sm:w-auto items-center gap-2 flex-wrap sm:flex-nowrap">
           {/* Format toggle */}
           <select
             value={project.outputFormat || "9:16"}
             onChange={(e) => onSetOutputFormat(e.target.value as OutputFormat)}
-            className="px-2 py-1 text-[9px] sm:text-[10px] bg-[#F0F0F0] border border-[#E0E0E0] rounded text-[#444] focus:outline-none uppercase tracking-[0.1em] font-semibold"
+            className="min-w-[112px] flex-1 sm:flex-none px-3 py-2 text-[9px] sm:text-[10px] bg-white border border-[#E0E0E0] rounded-xl text-[#444] focus:outline-none uppercase tracking-[0.1em] font-semibold"
             title="Formato de exportação"
           >
             <option value="9:16">Story 9:16</option>
@@ -371,10 +383,10 @@ export function TemplateEditor({
           {/* Carousel toggle */}
           <button
             onClick={() => onSetCarousel(!project.isCarousel)}
-            className={`px-2.5 sm:px-3 py-1 rounded-full text-[8px] sm:text-[9px] tracking-[0.15em] sm:tracking-[0.18em] uppercase font-semibold transition-all whitespace-nowrap
+            className={`min-h-10 px-3 sm:px-4 py-2 rounded-full text-[8px] sm:text-[9px] tracking-[0.15em] sm:tracking-[0.18em] uppercase font-semibold transition-all whitespace-nowrap
               ${project.isCarousel
-                ? "bg-[#0A0A0A] text-white"
-                : "bg-[#F0F0F0] text-[#888] hover:bg-[#E0E0E0]"
+                ? "bg-[#0A0A0A] text-white shadow-[0_12px_24px_rgba(10,10,10,0.12)]"
+                : "bg-white border border-[#E0E0E0] text-[#888] hover:border-[#0A0A0A] hover:text-[#0A0A0A]"
               }`}
           >
             {project.isCarousel ? "Carrossel ✓" : "Ativar"}
@@ -383,7 +395,7 @@ export function TemplateEditor({
             <select
               value={project.slides.length}
               onChange={(e) => onSetSlideCount(Number(e.target.value))}
-              className="px-2 py-1 text-[9px] sm:text-[10px] bg-[#F0F0F0] border border-[#E0E0E0] rounded text-[#444] focus:outline-none"
+              className="min-h-10 px-3 py-2 text-[9px] sm:text-[10px] bg-white border border-[#E0E0E0] rounded-xl text-[#444] focus:outline-none"
             >
               {[2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
                 <option key={n} value={n}>
@@ -424,7 +436,7 @@ export function TemplateEditor({
       )}
 
       {/* ── Tab Content ──────────────────────────────────────────────────── */}
-      <div className="p-5 space-y-5">
+      <div className="p-4 sm:p-5 space-y-5">
 
         {/* ─── TEXTO TAB ─────────────────────────────────────────────────── */}
         {tab === "texto" && (
@@ -478,9 +490,9 @@ export function TemplateEditor({
                   <button
                     key={pos}
                     onClick={() => onUpdateSlide({ textPosition: pos })}
-                    className={`flex flex-col items-center gap-1 py-2.5 px-3 rounded-lg border-2 transition-all text-[10px] font-semibold tracking-[0.08em] uppercase
+                    className={`flex flex-col items-center gap-1 py-2.5 px-3 rounded-2xl border transition-all text-[10px] font-semibold tracking-[0.08em] uppercase
                       ${(currentSlide.textPosition ?? "bottom") === pos
-                        ? "border-[#0A0A0A] bg-[#0A0A0A] text-white"
+                        ? "border-[#0A0A0A] bg-[#0A0A0A] text-white shadow-[0_12px_24px_rgba(10,10,10,0.12)]"
                         : "border-[#E0E0E0] bg-[#FAFAFA] text-[#555] hover:border-[#0A0A0A]"
                       }`}
                   >
@@ -503,7 +515,7 @@ export function TemplateEditor({
                   <button
                     key={i}
                     onClick={() => onUpdateSlide({ title: p.t, subtitle: p.s })}
-                    className="px-3 py-1.5 rounded-full bg-[#F2F2F2] border border-[#E0E0E0] text-[9px] tracking-[0.1em] uppercase text-[#555] hover:bg-[#0A0A0A] hover:text-white hover:border-[#0A0A0A] transition-all font-medium"
+                    className={chipButtonClass}
                   >
                     {p.t.split("\n")[0]}...
                   </button>
@@ -537,8 +549,8 @@ export function TemplateEditor({
                       key={slide.id}
                       type="button"
                       onClick={() => onSetCurrentSlide(index)}
-                      className={`border rounded-2xl overflow-hidden text-left transition-all ${project.currentSlideIndex === index
-                          ? "border-[#0A0A0A] shadow-sm"
+                      className={`border rounded-[20px] overflow-hidden text-left transition-all ${project.currentSlideIndex === index
+                          ? "border-[#0A0A0A] shadow-[0_12px_28px_rgba(10,10,10,0.12)] -translate-y-0.5"
                           : "border-[#E0E0E0] bg-[#FAFAFA] hover:border-[#888]"
                         }`}
                     >
@@ -572,7 +584,7 @@ export function TemplateEditor({
                 onDragLeave={() => setDragOver(false)}
                 onDrop={handleDrop}
                 onClick={() => fileInputRef.current?.click()}
-                className={`relative w-full h-28 rounded-lg border-2 border-dashed flex flex-col items-center justify-center cursor-pointer transition-all
+                className={`relative w-full h-28 rounded-2xl border-2 border-dashed flex flex-col items-center justify-center cursor-pointer transition-all
                   ${dragOver
                     ? "border-[#0A0A0A] bg-[#F5F5F5]"
                     : "border-[#D0D0D0] bg-[#FAFAFA] hover:border-[#0A0A0A] hover:bg-[#F5F5F5]"
@@ -612,7 +624,7 @@ export function TemplateEditor({
                     <button
                       type="button"
                       onClick={() => setImageOffset(0, -5)}
-                      className="px-3 py-2 rounded-lg bg-[#F5F5F5] border border-[#E0E0E0] text-[#444] hover:bg-[#E0E0E0] transition"
+                      className={softButtonClass}
                     >
                       Cima
                     </button>
@@ -620,14 +632,14 @@ export function TemplateEditor({
                       <button
                         type="button"
                         onClick={() => setImageOffset(-5, 0)}
-                        className="px-3 py-2 rounded-lg bg-[#F5F5F5] border border-[#E0E0E0] text-[#444] hover:bg-[#E0E0E0] transition"
+                        className={softButtonClass}
                       >
                         Esquerda
                       </button>
                       <button
                         type="button"
                         onClick={() => setImageOffset(5, 0)}
-                        className="px-3 py-2 rounded-lg bg-[#F5F5F5] border border-[#E0E0E0] text-[#444] hover:bg-[#E0E0E0] transition"
+                        className={softButtonClass}
                       >
                         Direita
                       </button>
@@ -635,7 +647,7 @@ export function TemplateEditor({
                     <button
                       type="button"
                       onClick={() => setImageOffset(0, 5)}
-                      className="px-3 py-2 rounded-lg bg-[#F5F5F5] border border-[#E0E0E0] text-[#444] hover:bg-[#E0E0E0] transition"
+                      className={softButtonClass}
                     >
                       Baixo
                     </button>
@@ -648,7 +660,7 @@ export function TemplateEditor({
                     <button
                       type="button"
                       onClick={() => setImageScale((currentSlide.imageScale ?? 1) - 0.1)}
-                      className="px-3 py-2 rounded-lg bg-[#F5F5F5] border border-[#E0E0E0] text-[#444] hover:bg-[#E0E0E0] transition"
+                      className={softButtonClass}
                     >
                       -
                     </button>
@@ -664,7 +676,7 @@ export function TemplateEditor({
                     <button
                       type="button"
                       onClick={() => setImageScale((currentSlide.imageScale ?? 1) + 0.1)}
-                      className="px-3 py-2 rounded-lg bg-[#F5F5F5] border border-[#E0E0E0] text-[#444] hover:bg-[#E0E0E0] transition"
+                      className={softButtonClass}
                     >
                       +
                     </button>
@@ -771,7 +783,7 @@ export function TemplateEditor({
                 />
                 <button
                   onClick={() => onUpdateSlide({ imageUrl: "" })}
-                  className="absolute top-2 right-2 w-7 h-7 bg-black/70 rounded-full flex items-center justify-center text-white hover:bg-black transition-colors z-10"
+                  className="absolute top-2 right-2 h-9 w-9 rounded-full border border-white/20 bg-black/70 flex items-center justify-center text-white hover:bg-black transition-colors z-10"
                 >
                   <X size={13} />
                 </button>
@@ -818,9 +830,9 @@ export function TemplateEditor({
                   <button
                     key={cat}
                     onClick={() => setAiCategory(cat)}
-                    className={`text-left px-4 py-2.5 rounded-lg border text-sm transition-all
+                    className={`text-left px-4 py-2.5 rounded-2xl border text-sm transition-all
                       ${aiCategory === cat
-                        ? "border-[#0A0A0A] bg-[#0A0A0A] text-white"
+                        ? "border-[#0A0A0A] bg-[#0A0A0A] text-white shadow-[0_12px_24px_rgba(10,10,10,0.12)]"
                         : "border-[#E0E0E0] bg-[#FAFAFA] text-[#444] hover:border-[#0A0A0A]"
                       }`}
                   >
@@ -833,7 +845,7 @@ export function TemplateEditor({
             <button
               onClick={handleGenerateAI}
               disabled={isGenerating}
-              className="w-full py-3.5 bg-[#0A0A0A] text-white rounded-lg hover:bg-[#1A1A1A] transition-all disabled:opacity-40 flex items-center justify-center gap-2 font-semibold text-sm tracking-wide"
+              className="vv-btn w-full min-h-12 text-sm tracking-[0.12em]"
             >
               {isGenerating ? (
                 <>
@@ -891,7 +903,7 @@ export function TemplateEditor({
                       onUpdateSlide({ title: content.title, subtitle: content.subtitle });
                       setGeneratedSequence(null);
                     }}
-                    className="flex-1 py-3 bg-[#0A0A0A] text-white text-[10px] tracking-[0.18em] uppercase font-semibold hover:bg-[#1A1A1A] transition-colors"
+                    className="vv-btn rounded-none border-0 shadow-none hover:translate-y-0"
                   >
                     {project.isCarousel
                       ? `Aplicar Slide ${project.currentSlideIndex + 1}`
@@ -899,7 +911,7 @@ export function TemplateEditor({
                   </button>
                   <button
                     onClick={handleGenerateAI}
-                    className="px-5 py-3 bg-[#F5F5F5] text-[#0A0A0A] text-[10px] tracking-wide uppercase hover:bg-[#E0E0E0] transition-colors border-l border-[#EBEBEB]"
+                    className="vv-btn-secondary rounded-none border-y-0 border-r-0 border-l border-[#EBEBEB] shadow-none hover:translate-y-0"
                   >
                     <RefreshCw size={12} />
                   </button>
@@ -949,9 +961,9 @@ export function TemplateEditor({
               <div className="flex gap-2 mb-4">
                 <button
                   onClick={() => { setBibMode("carousel"); setBibFilter("Todos"); }}
-                  className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg border-2 text-[10px] font-semibold tracking-[0.1em] uppercase transition-all
+                  className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-2xl border text-[10px] font-semibold tracking-[0.1em] uppercase transition-all
                     ${bibMode === "carousel"
-                      ? "border-[#0A0A0A] bg-[#0A0A0A] text-white"
+                      ? "border-[#0A0A0A] bg-[#0A0A0A] text-white shadow-[0_12px_24px_rgba(10,10,10,0.12)]"
                       : "border-[#E0E0E0] bg-[#FAFAFA] text-[#555] hover:border-[#0A0A0A]"
                     }`}
                 >
@@ -960,9 +972,9 @@ export function TemplateEditor({
                 </button>
                 <button
                   onClick={() => { setBibMode("single"); setBibFilter("Todos"); }}
-                  className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg border-2 text-[10px] font-semibold tracking-[0.1em] uppercase transition-all
+                  className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-2xl border text-[10px] font-semibold tracking-[0.1em] uppercase transition-all
                     ${bibMode === "single"
-                      ? "border-[#0A0A0A] bg-[#0A0A0A] text-white"
+                      ? "border-[#0A0A0A] bg-[#0A0A0A] text-white shadow-[0_12px_24px_rgba(10,10,10,0.12)]"
                       : "border-[#E0E0E0] bg-[#FAFAFA] text-[#555] hover:border-[#0A0A0A]"
                     }`}
                 >
@@ -1019,7 +1031,7 @@ export function TemplateEditor({
                             </div>
                             <button
                               onClick={() => setExpandedCarousel(isExpanded ? null : carousel.id)}
-                              className="flex-shrink-0 p-1.5 rounded-md bg-[#F0F0F0] text-[#555] hover:bg-[#E0E0E0] transition-colors"
+                              className="vv-btn-icon h-8 w-8 rounded-lg"
                             >
                               {isExpanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
                             </button>
@@ -1030,7 +1042,7 @@ export function TemplateEditor({
                               onApplyCarousel(carousel.slides);
                               setTab("texto");
                             }}
-                            className="mt-2.5 w-full py-2 bg-[#0A0A0A] text-white text-[9px] tracking-[0.15em] uppercase font-semibold rounded-md hover:bg-[#1A1A1A] transition-colors"
+                            className="vv-btn mt-2.5 w-full min-h-10 text-[9px]"
                           >
                             Aplicar Carrossel Completo →
                           </button>
@@ -1066,7 +1078,7 @@ export function TemplateEditor({
                                       onUpdateSlide({ title: slide.title, subtitle: slide.subtitle, tag: slide.tag ?? "VERSAVISUAL" });
                                       setTab("texto");
                                     }}
-                                    className="flex-shrink-0 px-2.5 py-1 rounded-md bg-[#F0F0F0] border border-[#E0E0E0] text-[8px] tracking-[0.1em] uppercase font-semibold text-[#444] hover:bg-[#0A0A0A] hover:text-white hover:border-[#0A0A0A] transition-all"
+                                    className="vv-btn-secondary flex-shrink-0 px-2.5 py-1 min-h-8 text-[8px]"
                                   >
                                     Usar
                                   </button>
@@ -1113,7 +1125,7 @@ export function TemplateEditor({
                               onUpdateSlide({ title: single.title, subtitle: single.subtitle, tag: "VERSAVISUAL" });
                               setTab("texto");
                             }}
-                            className="flex-shrink-0 px-3 py-2 rounded-md bg-[#0A0A0A] text-white text-[9px] tracking-[0.1em] uppercase font-semibold hover:bg-[#1A1A1A] transition-all"
+                            className="vv-btn flex-shrink-0 px-3 py-2 min-h-10 text-[9px]"
                           >
                             Aplicar
                           </button>
@@ -1248,7 +1260,7 @@ export function TemplateEditor({
                       tagAnimationDuration: 0.9,
                     })
                   }
-                  className="rounded-2xl border border-[#E0E0E0] bg-white py-3 px-4 text-left text-[10px] uppercase tracking-[0.18em] text-[#0A0A0A] hover:border-[#0A0A0A]"
+                  className="rounded-2xl border border-[#E0E0E0] bg-white py-3 px-4 text-left text-[10px] uppercase tracking-[0.18em] text-[#0A0A0A] hover:border-[#0A0A0A] transition-colors"
                 >
                   Entrada Suave
                 </button>
@@ -1267,7 +1279,7 @@ export function TemplateEditor({
                       tagAnimationDuration: 0.9,
                     })
                   }
-                  className="rounded-2xl border border-[#E0E0E0] bg-white py-3 px-4 text-left text-[10px] uppercase tracking-[0.18em] text-[#0A0A0A] hover:border-[#0A0A0A]"
+                  className="rounded-2xl border border-[#E0E0E0] bg-white py-3 px-4 text-left text-[10px] uppercase tracking-[0.18em] text-[#0A0A0A] hover:border-[#0A0A0A] transition-colors"
                 >
                   Reveal Editorial
                 </button>
@@ -1286,7 +1298,7 @@ export function TemplateEditor({
                       tagAnimationDuration: 0.9,
                     })
                   }
-                  className="rounded-2xl border border-[#E0E0E0] bg-white py-3 px-4 text-left text-[10px] uppercase tracking-[0.18em] text-[#0A0A0A] hover:border-[#0A0A0A]"
+                  className="rounded-2xl border border-[#E0E0E0] bg-white py-3 px-4 text-left text-[10px] uppercase tracking-[0.18em] text-[#0A0A0A] hover:border-[#0A0A0A] transition-colors"
                 >
                   Sequência Editorial
                 </button>
@@ -1298,12 +1310,12 @@ export function TemplateEditor({
 
       {/* ── Slide actions (carousel) ─────────────────────────────────────── */}
       {project.isCarousel && (
-        <div className="px-5 pb-5 pt-1 border-t border-[#EBEBEB] flex items-center justify-between gap-2">
+        <div className="px-4 sm:px-5 pb-5 pt-3 border-t border-[#EBEBEB] flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-2">
             <button
               onClick={() => onSetCurrentSlide(Math.max(0, project.currentSlideIndex - 1))}
               disabled={project.currentSlideIndex === 0}
-              className="p-2 rounded-md bg-[#F0F0F0] text-[#444] hover:bg-[#E0E0E0] disabled:opacity-30 transition-colors"
+              className={iconButtonClass}
             >
               <ChevronLeft size={14} />
             </button>
@@ -1315,16 +1327,16 @@ export function TemplateEditor({
                 onSetCurrentSlide(Math.min(project.slides.length - 1, project.currentSlideIndex + 1))
               }
               disabled={project.currentSlideIndex === project.slides.length - 1}
-              className="p-2 rounded-md bg-[#F0F0F0] text-[#444] hover:bg-[#E0E0E0] disabled:opacity-30 transition-colors"
+              className={iconButtonClass}
             >
               <ChevronRight size={14} />
             </button>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex w-full sm:w-auto items-center gap-2">
             <button
               onClick={onDuplicateSlide}
-              className="px-3 py-1.5 rounded-md bg-[#F5F5F5] border border-[#E0E0E0] text-[#444] hover:bg-[#E0E0E0] transition-colors flex items-center gap-1 text-[9px] tracking-wide uppercase font-semibold"
+              className="vv-btn-secondary min-h-10 flex-1 sm:flex-none"
               title="Duplicar slide atual"
             >
               <Copy size={11} />
@@ -1333,7 +1345,7 @@ export function TemplateEditor({
             <button
               onClick={onDeleteSlide}
               disabled={project.slides.length <= 1}
-              className="px-3 py-1.5 rounded-md bg-[#FEE] border border-[#FCC] text-[#C33] hover:bg-[#FDD] transition-colors flex items-center gap-1 text-[9px] tracking-wide uppercase font-semibold disabled:opacity-30"
+              className="vv-btn-danger min-h-10 flex-1 sm:flex-none"
               title="Deletar slide atual"
             >
               <Trash2 size={11} />

@@ -1,0 +1,88 @@
+{
+    "version": 1.0,
+    "collections": {
+        "VersaVisual-Colors": {
+            "name": "VersaVisual Colors",
+            "variables": {
+                "VV/Black": {
+                    "type": "COLOR",
+                    "value": "#0A0A0A"
+                },
+                "VV/White": {
+                    "type": "COLOR",
+                    "value": "#FFFFFF"
+                },
+                "VV/Teal-Accent": {
+                    "type": "COLOR",
+                    "value": "#5B9BAF"
+                },
+                "VV/Light-Text": {
+                    "type": "COLOR",
+                    "value": "#E0E0E0"
+                },
+                "VV/Section-Label": {
+                    "type": "COLOR",
+                    "value": "#7AABB8"
+                }
+            }
+        },
+        "VersaVisual-Typography": {
+            "name": "VersaVisual Typography",
+            "variables": {
+                "Display/Font-Family": {
+                    "type": "STRING",
+                    "value": "Bebas Neue, Barlow Condensed, sans-serif"
+                },
+                "Display/Font-Size-XL": {
+                    "type": "FLOAT",
+                    "value": 48
+                },
+                "Display/Font-Weight": {
+                    "type": "FLOAT",
+                    "value": 700
+                },
+                "Body/Font-Family": {
+                    "type": "STRING",
+                    "value": "ui-sans-serif, system-ui, sans-serif"
+                },
+                "Body/Font-Size": {
+                    "type": "FLOAT",
+                    "value": 16
+                },
+                "Body/Font-Weight": {
+                    "type": "FLOAT",
+                    "value": 400
+                }
+            }
+        },
+        "VersaVisual-Spacing": {
+            "name": "VersaVisual Spacing",
+            "variables": {
+                "Space/4": {
+                    "type": "FLOAT",
+                    "value": 4
+                },
+                "Space/8": {
+                    "type": "FLOAT",
+                    "value": 8
+                },
+                "Space/12": {
+                    "type": "FLOAT",
+                    "value": 12
+                },
+                "Space/16": {
+                    "type": "FLOAT",
+                    "value": 16
+                },
+                "Space/24": {
+                    "type": "FLOAT",
+                    "value": 24
+                },
+                "Space/32": {
+                    "type": "FLOAT",
+                    "value": 32
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,126 @@
+{
+  "exportSettings": [
+    {
+      "suffix": "",
+      "format": "SVG",
+      "constraint": {
+        "type": "SCALE"
+      }
+    }
+  ],
+  "blendMode": "PASS_THROUGH",
+  "children": [
+    {
+      "id": "1:1",
+      "name": "🎨 VersaVisual Colors",
+      "type": "FRAME",
+      "visible": true,
+      "locked": false,
+      "background": [
+        {
+          "blendMode": "NORMAL",
+          "type": "SOLID",
+          "color": {
+            "r": 0.04,
+            "g": 0.04,
+            "b": 0.04,
+            "a": 1
+          }
+        }
+      ],
+      "children": [
+        {
+          "id": "2:1",
+          "name": "VV Black",
+          "type": "RECTANGLE",
+          "visible": true,
+          "fill": [
+            {
+              "blendMode": "NORMAL",
+              "type": "SOLID",
+              "color": {
+                "r": 0.04,
+                "g": 0.04,
+                "b": 0.04,
+                "a": 1
+              }
+            }
+          ]
+        },
+        {
+          "id": "2:2",
+          "name": "VV White",
+          "type": "RECTANGLE",
+          "visible": true,
+          "fill": [
+            {
+              "blendMode": "NORMAL",
+              "type": "SOLID",
+              "color": {
+                "r": 1,
+                "g": 1,
+                "b": 1,
+                "a": 1
+              }
+            }
+          ]
+        },
+        {
+          "id": "2:3",
+          "name": "VV Teal Accent",
+          "type": "RECTANGLE",
+          "visible": true,
+          "fill": [
+            {
+              "blendMode": "NORMAL",
+              "type": "SOLID",
+              "color": {
+                "r": 0.357,
+                "g": 0.608,
+                "b": 0.686,
+                "a": 1
+              }
+            }
+          ]
+        },
+        {
+          "id": "2:4",
+          "name": "VV Light Text",
+          "type": "RECTANGLE",
+          "visible": true,
+          "fill": [
+            {
+              "blendMode": "NORMAL",
+              "type": "SOLID",
+              "color": {
+                "r": 0.88,
+                "g": 0.88,
+                "b": 0.88,
+                "a": 1
+              }
+            }
+          ]
+        },
+        {
+          "id": "2:5",
+          "name": "VV Section Label",
+          "type": "RECTANGLE",
+          "visible": true,
+          "fill": [
+            {
+              "blendMode": "NORMAL",
+              "type": "SOLID",
+              "color": {
+                "r": 0.478,
+                "g": 0.671,
+                "b": 0.722,
+                "a": 1
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "name": "VersaVisual Brand System"
+}

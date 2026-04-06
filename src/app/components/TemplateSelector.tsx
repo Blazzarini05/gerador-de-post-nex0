@@ -165,7 +165,7 @@ export function TemplateSelector({ selectedTemplate, onSelectTemplate }: Props) 
         </p>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 sm:gap-4">
+      <div className="grid grid-cols-1 min-[420px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 sm:gap-4">
         {templates.map((template) => {
           const isSelected = selectedTemplate === template.id;
           return (
@@ -173,10 +173,10 @@ export function TemplateSelector({ selectedTemplate, onSelectTemplate }: Props) 
               key={template.id}
               onClick={() => onSelectTemplate(template.id)}
               className={`
-                text-left rounded-lg border-2 transition-all duration-200 overflow-hidden
+                text-left rounded-2xl border transition-all duration-200 overflow-hidden bg-white
                 ${isSelected
-                  ? "border-[#0A0A0A] shadow-xl scale-[1.03]"
-                  : "border-[#DCDCDC] bg-white hover:border-[#0A0A0A] hover:shadow-md hover:scale-[1.01]"
+                  ? "border-[#0A0A0A] shadow-[0_18px_40px_rgba(10,10,10,0.14)] -translate-y-1"
+                  : "border-[#DCDCDC] hover:border-[#0A0A0A] hover:-translate-y-0.5 hover:shadow-[0_14px_28px_rgba(10,10,10,0.08)]"
                 }
               `}
             >

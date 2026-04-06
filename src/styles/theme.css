@@ -180,3 +180,29 @@
     line-height: 1.5;
   }
 }
+
+@layer components {
+  .vv-btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-[#0A0A0A] bg-[#0A0A0A] px-4 py-2.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-white transition-all duration-200 hover:-translate-y-px hover:bg-[#161616] hover:shadow-[0_14px_30px_rgba(10,10,10,0.14)] focus-visible:ring-2 focus-visible:ring-[#0A0A0A]/20 disabled:pointer-events-none disabled:translate-y-0 disabled:opacity-45 disabled:shadow-none;
+  }
+
+  .vv-btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-[#D8D8D8] bg-white px-4 py-2.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#0A0A0A] transition-all duration-200 hover:-translate-y-px hover:border-[#0A0A0A] hover:bg-[#F7F7F7] hover:shadow-[0_10px_24px_rgba(10,10,10,0.08)] focus-visible:ring-2 focus-visible:ring-[#0A0A0A]/10 disabled:pointer-events-none disabled:translate-y-0 disabled:opacity-45 disabled:shadow-none;
+  }
+
+  .vv-btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-[#E7E7E7] bg-[#F6F6F6] px-3.5 py-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#444] transition-colors hover:border-[#CFCFCF] hover:bg-[#ECECEC] hover:text-[#0A0A0A] disabled:pointer-events-none disabled:opacity-40;
+  }
+
+  .vv-btn-chip {
+    @apply inline-flex items-center justify-center gap-1.5 rounded-full border border-[#DDDDDD] bg-[#F2F2F2] px-3 py-1.5 text-[9px] font-semibold uppercase tracking-[0.14em] text-[#555] transition-all duration-200 hover:border-[#0A0A0A] hover:bg-white hover:text-[#0A0A0A];
+  }
+
+  .vv-btn-icon {
+    @apply inline-flex items-center justify-center rounded-xl border border-[#E4E4E4] bg-[#F4F4F4] text-[#444] transition-colors hover:bg-[#EAEAEA] hover:text-[#0A0A0A] disabled:pointer-events-none disabled:opacity-35;
+  }
+
+  .vv-btn-danger {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-[#F1CACA] bg-[#FFF4F4] px-4 py-2.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#B53D3D] transition-colors hover:border-[#E2A8A8] hover:bg-[#FFE9E9] disabled:pointer-events-none disabled:opacity-40;
+  }
+}
