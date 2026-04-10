@@ -26,7 +26,7 @@ import {
   type ContentSlide,
 } from "../data/contentLibrary";
 
-// ── AI Content Database — VERSAVISUAL 6 Pilares de Conteúdo ─────────────────
+// ── AI Content Database — NEXO 6 Pilares de Conteúdo ─────────────────
 type StorySequence = Array<{ title: string; subtitle: string; progression: string }>;
 
 const AI_CAROUSEL_STORIES: Record<string, StorySequence> = {
@@ -135,7 +135,7 @@ const AI_CAROUSEL_STORIES: Record<string, StorySequence> = {
       progression: "03 — Versatilidade · Amplitude",
     },
     {
-      title: "A VERSAVISUAL\nVAI ONDE A\nHISTÓRIA\nACONTECE.",
+      title: "A NEXO\nVAI ONDE A\nHISTÓRIA\nACONTECE.",
       subtitle: "Presença nacional. Pontes reais entre marcas, artistas e audiências. B2B com alma.",
       progression: "04 — Presença · Compromisso",
     },
@@ -474,7 +474,7 @@ export function TemplateEditor({
                 value={currentSlide.tag || ""}
                 onChange={(e) => onUpdateSlide({ tag: e.target.value })}
                 className={inputClass}
-                placeholder="VERSA VISUAL · 2025 · etc..."
+                placeholder="NEXO · 2025 · etc..."
               />
             </div>
 
@@ -813,13 +813,13 @@ export function TemplateEditor({
               <div className="flex items-center gap-2 mb-3">
                 <Sparkles size={15} className="text-[#0A0A0A]" />
                 <p className="text-sm font-semibold text-[#0A0A0A]">
-                  Gerador de Conteúdo VERSAVISUAL
+                  Gerador de Conteúdo NEXO
                 </p>
               </div>
               <p className="text-[11px] text-[#888] leading-relaxed mb-4">
                 {project.isCarousel
                   ? "Gera uma sequência de storytelling estruturada para carrosséis — cada slide segue uma progressão narrativa baseada nos 6 pilares de conteúdo."
-                  : "Gera texto no tom editorial da VERSAVISUAL — direto, intencional e confiante. Título impactante + subtítulo persuasivo."}
+                  : "Gera texto no tom editorial da NEXO — direto, intencional e confiante. Título impactante + subtítulo persuasivo."}
               </p>
             </div>
 
@@ -924,7 +924,7 @@ export function TemplateEditor({
                 Sobre o gerador
               </p>
               <p className="text-[11px] text-[#888] leading-relaxed">
-                Conteúdo curado com storytelling estruturado baseado na identidade VERSAVISUAL —
+                Conteúdo curado com storytelling estruturado baseado na identidade NEXO —
                 hub criativo de fotografia, storymaking, videomaking e direção. Tom direto, intencional e confiante.
                 {project.isCarousel && " Cada slide do carrossel segue uma progressão narrativa baseada nos 6 pilares."}
               </p>
@@ -1075,7 +1075,7 @@ export function TemplateEditor({
                                   </div>
                                   <button
                                     onClick={() => {
-                                      onUpdateSlide({ title: slide.title, subtitle: slide.subtitle, tag: slide.tag ?? "VERSAVISUAL" });
+                                      onUpdateSlide({ title: slide.title, subtitle: slide.subtitle, tag: slide.tag ?? "NEXO" });
                                       setTab("texto");
                                     }}
                                     className="vv-btn-secondary flex-shrink-0 px-2.5 py-1 min-h-8 text-[8px]"
@@ -1122,7 +1122,7 @@ export function TemplateEditor({
                           </div>
                           <button
                             onClick={() => {
-                              onUpdateSlide({ title: single.title, subtitle: single.subtitle, tag: "VERSAVISUAL" });
+                              onUpdateSlide({ title: single.title, subtitle: single.subtitle, tag: "NEXO" });
                               setTab("texto");
                             }}
                             className="vv-btn flex-shrink-0 px-3 py-2 min-h-10 text-[9px]"

@@ -129,7 +129,7 @@ export function T01DarkHeader({ data, width = 540, height = 960, globalAnimation
         className="absolute bottom-7 left-8 z-20 font-[family-name:var(--font-display)] tracking-[0.28em] uppercase pointer-events-none"
         style={{ fontSize: "10px", color: "rgba(255,255,255,0.28)" }}
       >
-        VERSAVISUAL
+        NEXO
       </div>
     </div>
   );

@@ -130,7 +130,7 @@ export function T03BWEditorial({ data, width = 540, height = 960, globalAnimatio
         className="absolute bottom-6 right-8 z-30 font-[family-name:var(--font-display)] tracking-[0.28em] uppercase pointer-events-none"
         style={{ fontSize: "9px", color: "rgba(255,255,255,0.20)" }}
       >
-        VERSA
+        NEXO
       </div>
     </div>
   );

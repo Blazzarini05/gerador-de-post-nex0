@@ -126,7 +126,7 @@ export function T02BottomText({ data, width = 540, height = 960, globalAnimation
         className="absolute bottom-7 right-8 z-20 font-[family-name:var(--font-display)] tracking-[0.28em] uppercase pointer-events-none"
         style={{ fontSize: "9px", color: "rgba(255,255,255,0.22)" }}
       >
-        VV
+        NEXO
       </div>
     </div>
   );

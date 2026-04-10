@@ -110,7 +110,7 @@ export function T05MagazineWide({ data, width = 960, height = 540, globalAnimati
         className="absolute right-10 bottom-10 z-[2] w-[64px] h-[64px] rounded-full border flex items-center justify-center font-[family-name:var(--font-display)] text-center leading-[1.2] tracking-[0.18em] uppercase pointer-events-none"
         style={{ borderColor: "rgba(255,255,255,0.20)", color: "rgba(255,255,255,0.45)", fontSize: "8px" }}
       >
-        VERSA<br />VISUAL
+        NEXO
       </div>
       <div
         className="absolute top-0 left-0 right-0 h-[2px] z-[3] pointer-events-none"

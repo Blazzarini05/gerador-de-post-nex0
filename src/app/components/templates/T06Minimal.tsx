@@ -68,7 +68,7 @@ export function T06Minimal({ data, width = 540, height = 960, globalAnimation }:
         className="font-medium tracking-[0.32em] uppercase relative z-20 pointer-events-none"
         style={{ fontSize: "9px", color: "rgba(255,255,255,0.30)" }}
       >
-        {data.tag || "VERSAVISUAL"}
+        {data.tag || "NEXO"}
       </motion.div>
 
       <div
@@ -107,14 +107,7 @@ export function T06Minimal({ data, width = 540, height = 960, globalAnimation }:
           className="font-[family-name:var(--font-display)] tracking-[0.24em] uppercase"
           style={{ fontSize: "14px", color: "rgba(255,255,255,0.60)" }}
         >
-          VERSA
-        </div>
-        <div className="w-1.5 h-1.5 rounded-full" style={{ background: "rgba(255,255,255,0.25)" }} />
-        <div
-          className="font-[family-name:var(--font-display)] tracking-[0.24em] uppercase"
-          style={{ fontSize: "14px", color: "rgba(255,255,255,0.22)" }}
-        >
-          VISUAL
+          NEXO
         </div>
       </div>
 

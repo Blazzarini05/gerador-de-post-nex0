@@ -116,7 +116,7 @@ export function T04SquareSplit({ data, width = 540, height = 540, globalAnimatio
           className="absolute bottom-4 right-6 font-[family-name:var(--font-display)] tracking-[0.22em] uppercase"
           style={{ fontSize: "11px", color: "rgba(255,255,255,0.22)" }}
         >
-          VV
+          NEXO
         </div>
       </div>
     </div>

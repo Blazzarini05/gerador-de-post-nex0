@@ -196,7 +196,7 @@ export function TemplatePreview({ project, currentSlide, onSetCurrentSlide }: Pr
       const slideLabel = project.isCarousel
         ? `-slide-${project.currentSlideIndex + 1}`
         : "";
-      link.download = `versavisual-${project.templateId}${slideLabel}-${Date.now()}.png`;
+      link.download = `nexo-${project.templateId}${slideLabel}-${Date.now()}.png`;
       link.href = canvas.toDataURL("image/png", 1.0);
       link.click();
     } catch (error) {
@@ -463,7 +463,7 @@ export function TemplatePreview({ project, currentSlide, onSetCurrentSlide }: Pr
       const link = document.createElement("a");
       const slideLabel = project.isCarousel ? `-slide-${project.currentSlideIndex + 1}` : "";
       const extension = mimeType.includes("mp4") ? "mp4" : "webm";
-      link.download = `versavisual-${project.templateId}${slideLabel}-${Date.now()}.${extension}`;
+      link.download = `nexo-${project.templateId}${slideLabel}-${Date.now()}.${extension}`;
       link.href = url;
       link.click();
       setTimeout(() => URL.revokeObjectURL(url), 1000);
@@ -538,7 +538,7 @@ export function TemplatePreview({ project, currentSlide, onSetCurrentSlide }: Pr
         });
 
         const link = document.createElement("a");
-        link.download = `versavisual-${project.templateId}-slide-${i + 1}.png`;
+        link.download = `nexo-${project.templateId}-slide-${i + 1}.png`;
         link.href = canvas.toDataURL("image/png", 1.0);
         link.click();
         await new Promise((resolve) => setTimeout(resolve, 300));

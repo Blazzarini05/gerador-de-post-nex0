@@ -6,7 +6,7 @@ export function Header() {
           className="font-[family-name:var(--font-display)] text-white uppercase tracking-[0.22em] truncate"
           style={{ fontSize: "clamp(16px, 4vw, 22px)" }}
         >
-          Versa Visual
+          NEXO
         </div>
         <div
           className="hidden sm:block w-px h-5 bg-[#333]"
@@ -22,16 +22,6 @@ export function Header() {
             <span className="px-2.5 sm:px-3 py-1 rounded-full border border-[#2A2A2A] bg-[#151515] text-[8px] sm:text-[9px] tracking-[0.2em] uppercase text-[#7A7A7A] font-medium">
               v2.0
             </span>
-          </li>
-          <li className="hidden sm:block">
-            <a
-              href="https://versavisual.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-[#555] no-underline text-[11px] tracking-[0.18em] uppercase font-medium hover:text-white transition-colors"
-            >
-              versavisual.com
-            </a>
           </li>
         </ul>
       </nav>

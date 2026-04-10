@@ -75,7 +75,7 @@ export const createDefaultSlide = (index: number = 0): SlideData => ({
       ? "Fotografia com direção de cena, leitura de luz e sensibilidade editorial. Festivais, corporativos, casamentos, bastidores."
       : "Edite este slide com seu conteúdo editorial.",
   imageUrl: "",
-  tag: "VERSAVISUAL",
+  tag: "NEXO",
   overlayOpacity: 70,
   textPosition: "bottom",
   imageScale: 1,
@@ -100,7 +100,7 @@ function App() {
     animation: "none",
     animationSpeed: 1.2,
     isCarousel: false,
-    brandName: "VERSA VISUAL",
+    brandName: "NEXO",
     outputFormat: "9:16",
   });
 
@@ -193,7 +193,7 @@ function App() {
         title: cs.title,
         subtitle: cs.subtitle,
         imageUrl: prev.slides[i]?.imageUrl ?? "",
-        tag: cs.tag ?? "VERSAVISUAL",
+        tag: cs.tag ?? "NEXO",
         overlayOpacity: prev.slides[i]?.overlayOpacity ?? 70,
         textPosition: prev.slides[i]?.textPosition ?? "bottom",
         imageScale: prev.slides[i]?.imageScale ?? 1,
@@ -229,7 +229,7 @@ function App() {
         {/* Hero */}
         <div className="mb-8 sm:mb-10 lg:mb-12">
           <p className="text-[10px] tracking-[0.35em] uppercase text-[#888888] font-medium mb-3 sm:mb-4">
-            Versa Visual · Studio de Conteúdo · v2.0
+            NEXO · Studio de Conteúdo · v2.0
           </p>
           <h1
             className="font-[family-name:var(--font-display)] tracking-[0.04em] text-[#0A0A0A] leading-[0.92] uppercase mb-4 sm:mb-5"
@@ -240,7 +240,7 @@ function App() {
             Conteúdo
           </h1>
           <p className="text-sm sm:text-base font-light leading-[1.7] text-[#555] max-w-[540px]">
-            Crie posts, stories e carrosséis com a identidade visual Versa.
+            Crie posts, stories e carrosséis com a identidade visual NEXO.
             Texto manual ou gerado por IA, animações editoriais e exportação em
             alta qualidade.
           </p>
