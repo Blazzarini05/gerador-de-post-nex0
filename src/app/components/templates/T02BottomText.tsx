@@ -36,6 +36,7 @@ function getGradientStyle(pos: TextPosition, overlayOpacity: number): string {
 export function T02BottomText({ data, width = 540, height = 960, globalAnimation }: Props) {
   const overlayOpacity = (data.overlayOpacity ?? 70) / 100;
   const pos: TextPosition = data.textPosition ?? "bottom";
+  const ts = Math.max(0.75, Math.min(1.4, data.textScale ?? 1));
   const bgScale = data.imageScale ?? 1;
   const bgX = Math.max(-45, Math.min(45, data.imageOffsetX ?? 0));
   const bgY = Math.max(-45, Math.min(45, data.imageOffsetY ?? 0));
@@ -105,7 +106,7 @@ export function T02BottomText({ data, width = 540, height = 960, globalAnimation
             initial={titleAnimation.initial}
             animate={titleAnimation.animate}
             className="font-[family-name:var(--font-display)] text-white uppercase leading-[0.88]"
-            style={{ fontSize: "50px", letterSpacing: "0.01em", whiteSpace: "pre-line" }}
+            style={{ fontSize: `${Math.round(50 * ts)}px`, letterSpacing: "0.01em", whiteSpace: "pre-line" }}
           >
             {data.title}
           </motion.h1>
@@ -115,7 +116,7 @@ export function T02BottomText({ data, width = 540, height = 960, globalAnimation
             initial={subtitleAnimation.initial}
             animate={subtitleAnimation.animate}
             className="font-light leading-[1.5] mt-3"
-            style={{ fontSize: "12px", color: "rgba(255,255,255,0.72)", maxWidth: "280px" }}
+            style={{ fontSize: `${Math.round(12 * ts)}px`, color: "rgba(255,255,255,0.72)", maxWidth: "280px" }}
           >
             {data.subtitle}
           </motion.p>

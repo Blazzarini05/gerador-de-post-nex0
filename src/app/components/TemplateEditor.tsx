@@ -503,6 +503,49 @@ export function TemplateEditor({
               </div>
             </div>
 
+            {/* Text Scale */}
+            <div className="pt-3 border-t border-[#EBEBEB]">
+              <div className="flex items-center justify-between mb-2">
+                <label className={labelClass} style={{ marginBottom: 0 }}>Tamanho do Texto</label>
+                <div className="flex items-center gap-1.5">
+                  <button
+                    onClick={() => onUpdateSlide({ textScale: Math.max(0.75, (currentSlide.textScale ?? 1) - 0.05) })}
+                    className="w-7 h-7 rounded-lg border border-[#E0E0E0] bg-[#FAFAFA] text-[#555] text-sm font-bold hover:border-[#0A0A0A] hover:text-[#0A0A0A] transition-all flex items-center justify-center leading-none"
+                    title="Diminuir texto"
+                  >−</button>
+                  <span className="text-[11px] font-semibold text-[#0A0A0A] tabular-nums min-w-[36px] text-center">
+                    {Math.round((currentSlide.textScale ?? 1) * 100)}%
+                  </span>
+                  <button
+                    onClick={() => onUpdateSlide({ textScale: Math.min(1.4, (currentSlide.textScale ?? 1) + 0.05) })}
+                    className="w-7 h-7 rounded-lg border border-[#E0E0E0] bg-[#FAFAFA] text-[#555] text-sm font-bold hover:border-[#0A0A0A] hover:text-[#0A0A0A] transition-all flex items-center justify-center leading-none"
+                    title="Aumentar texto"
+                  >+</button>
+                  {(currentSlide.textScale ?? 1) !== 1 && (
+                    <button
+                      onClick={() => onUpdateSlide({ textScale: 1 })}
+                      className="w-7 h-7 rounded-lg border border-[#E0E0E0] bg-[#FAFAFA] text-[#888] text-[9px] font-semibold hover:border-[#0A0A0A] hover:text-[#0A0A0A] transition-all flex items-center justify-center tracking-[0.05em] uppercase"
+                      title="Resetar"
+                    >↺</button>
+                  )}
+                </div>
+              </div>
+              <input
+                type="range"
+                min={75}
+                max={140}
+                step={5}
+                value={Math.round((currentSlide.textScale ?? 1) * 100)}
+                onChange={(e) => onUpdateSlide({ textScale: Number(e.target.value) / 100 })}
+                className="w-full h-[3px] accent-[#0A0A0A] cursor-pointer"
+              />
+              <div className="flex justify-between text-[9px] text-[#AAA] mt-1 font-medium tracking-[0.06em]">
+                <span>75%</span>
+                <span>Padrão</span>
+                <span>140%</span>
+              </div>
+            </div>
+
             {/* Quick presets */}
             <div className="pt-3 border-t border-[#EBEBEB]">
               <label className={labelClass}>Presets Rápidos</label>

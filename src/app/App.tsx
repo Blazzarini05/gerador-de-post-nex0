@@ -27,6 +27,7 @@ export interface SlideData {
   titleAnimationDuration?: number;
   subtitleAnimationDuration?: number;
   tagAnimationDuration?: number;
+  textScale?: number; // 0.75–1.4 multiplier for title/subtitle font sizes
 }
 
 export type AnimationType =
@@ -90,6 +91,7 @@ export const createDefaultSlide = (index: number = 0): SlideData => ({
   titleAnimationDuration: 1.1,
   subtitleAnimationDuration: 1.1,
   tagAnimationDuration: 0.9,
+  textScale: 1,
 });
 
 function App() {
@@ -208,6 +210,7 @@ function App() {
         titleAnimationDuration: prev.slides[i]?.titleAnimationDuration ?? 1.1,
         subtitleAnimationDuration: prev.slides[i]?.subtitleAnimationDuration ?? 1.1,
         tagAnimationDuration: prev.slides[i]?.tagAnimationDuration ?? 0.9,
+        textScale: prev.slides[i]?.textScale ?? 1,
       }));
       return {
         ...prev,

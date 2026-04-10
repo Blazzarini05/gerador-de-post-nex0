@@ -12,6 +12,7 @@ interface Props {
 export function T04SquareSplit({ data, width = 540, height = 540, globalAnimation }: Props) {
   const overlayOpacity = (data.overlayOpacity ?? 70) / 100;
   const pos: TextPosition = data.textPosition ?? "bottom";
+  const ts = Math.max(0.75, Math.min(1.4, data.textScale ?? 1));
   const bgScale = data.imageScale ?? 1;
   const bgX = Math.max(-45, Math.min(45, data.imageOffsetX ?? 0));
   const bgY = Math.max(-45, Math.min(45, data.imageOffsetY ?? 0));
@@ -94,7 +95,7 @@ export function T04SquareSplit({ data, width = 540, height = 540, globalAnimatio
             initial={titleAnimation.initial}
             animate={titleAnimation.animate}
             className="font-[family-name:var(--font-display)] text-white uppercase leading-[0.93]"
-            style={{ fontSize: "27px", letterSpacing: "0.02em", whiteSpace: "pre-line" }}
+            style={{ fontSize: `${Math.round(27 * ts)}px`, letterSpacing: "0.02em", whiteSpace: "pre-line" }}
           >
             {data.title}
           </motion.h1>
@@ -106,7 +107,7 @@ export function T04SquareSplit({ data, width = 540, height = 540, globalAnimatio
               initial={subtitleAnimation.initial}
               animate={subtitleAnimation.animate}
               className="font-light leading-[1.5]"
-              style={{ fontSize: "10px", color: "rgba(255,255,255,0.55)" }}
+              style={{ fontSize: `${Math.round(10 * ts)}px`, color: "rgba(255,255,255,0.55)" }}
             >
               {data.subtitle}
             </motion.p>
