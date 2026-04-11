@@ -5,8 +5,6 @@ import { TemplatePreview } from "./components/TemplatePreview";
 import { Header } from "./components/Header";
 import type { ContentSlide } from "./data/contentLibrary";
 
-export type TextPosition = "top" | "center" | "bottom";
-
 export interface SlideData {
   id: string;
   title: string;
@@ -14,29 +12,21 @@ export interface SlideData {
   imageUrl: string;
   tag?: string;
   overlayOpacity?: number; // 0-100 percentage
-  textPosition?: TextPosition; // vertical text placement
-  imageScale?: number; // zoom % for background image
-  imageOffsetX?: number; // horizontal image repositioning
-  imageOffsetY?: number; // vertical image repositioning
-  titleAnimation?: AnimationType;
-  subtitleAnimation?: AnimationType;
-  tagAnimation?: AnimationType;
-  titleAnimationDelay?: number;
-  subtitleAnimationDelay?: number;
-  tagAnimationDelay?: number;
-  titleAnimationDuration?: number;
-  subtitleAnimationDuration?: number;
-  tagAnimationDuration?: number;
-  textScale?: number; // 0.75–1.4 multiplier for title/subtitle font sizes
+  imageScale?: number; // zoom % for background image (1.0–3.0)
+  imageOffsetX?: number; // -100 to +100
+  imageOffsetY?: number; // -100 to +100
+  // Per-element text positioning and styling
+  titleH?: number;          // 0–100, horizontal position of title
+  titleV?: number;          // 0–100, vertical position of title
+  titleFontScale?: number;  // 0.75–1.4 multiplier for title font size
+  titleColor?: string;      // CSS color string
+  titleAlign?: "left" | "center" | "right";
+  subtitleH?: number;       // 0–100, horizontal position of subtitle
+  subtitleV?: number;       // 0–100, vertical position of subtitle
+  subtitleFontScale?: number;
+  subtitleColor?: string;
+  subtitleAlign?: "left" | "center" | "right";
 }
-
-export type AnimationType =
-  | "none"
-  | "fade-in"
-  | "slide-up"
-  | "zoom-out"
-  | "reveal"
-  | "drift";
 
 export type TemplateId =
   | "t01-dark-header"
@@ -58,8 +48,6 @@ export interface ProjectState {
   templateId: TemplateId | null;
   slides: SlideData[];
   currentSlideIndex: number;
-  animation: AnimationType;
-  animationSpeed: number;
   isCarousel: boolean;
   brandName: string;
   outputFormat: OutputFormat;
@@ -78,20 +66,19 @@ export const createDefaultSlide = (index: number = 0): SlideData => ({
   imageUrl: "",
   tag: "NEXO",
   overlayOpacity: 70,
-  textPosition: "bottom",
   imageScale: 1,
   imageOffsetX: 0,
   imageOffsetY: 0,
-  titleAnimation: "none",
-  subtitleAnimation: "none",
-  tagAnimation: "none",
-  titleAnimationDelay: 0,
-  subtitleAnimationDelay: 0.2,
-  tagAnimationDelay: 0.4,
-  titleAnimationDuration: 1.1,
-  subtitleAnimationDuration: 1.1,
-  tagAnimationDuration: 0.9,
-  textScale: 1,
+  titleH: 50,
+  titleV: 10,
+  titleFontScale: 1,
+  titleColor: "rgba(255,255,255,1)",
+  titleAlign: "center",
+  subtitleH: 50,
+  subtitleV: 85,
+  subtitleFontScale: 1,
+  subtitleColor: "rgba(255,255,255,0.75)",
+  subtitleAlign: "center",
 });
 
 function App() {
@@ -99,8 +86,6 @@ function App() {
     templateId: null,
     slides: [createDefaultSlide(0)],
     currentSlideIndex: 0,
-    animation: "none",
-    animationSpeed: 1.2,
     isCarousel: false,
     brandName: "NEXO",
     outputFormat: "9:16",
@@ -197,26 +182,59 @@ function App() {
         imageUrl: prev.slides[i]?.imageUrl ?? "",
         tag: cs.tag ?? "NEXO",
         overlayOpacity: prev.slides[i]?.overlayOpacity ?? 70,
-        textPosition: prev.slides[i]?.textPosition ?? "bottom",
         imageScale: prev.slides[i]?.imageScale ?? 1,
         imageOffsetX: prev.slides[i]?.imageOffsetX ?? 0,
         imageOffsetY: prev.slides[i]?.imageOffsetY ?? 0,
-        titleAnimation: prev.slides[i]?.titleAnimation ?? "none",
-        subtitleAnimation: prev.slides[i]?.subtitleAnimation ?? "none",
-        tagAnimation: prev.slides[i]?.tagAnimation ?? "none",
-        titleAnimationDelay: prev.slides[i]?.titleAnimationDelay ?? 0,
-        subtitleAnimationDelay: prev.slides[i]?.subtitleAnimationDelay ?? 0.2,
-        tagAnimationDelay: prev.slides[i]?.tagAnimationDelay ?? 0.4,
-        titleAnimationDuration: prev.slides[i]?.titleAnimationDuration ?? 1.1,
-        subtitleAnimationDuration: prev.slides[i]?.subtitleAnimationDuration ?? 1.1,
-        tagAnimationDuration: prev.slides[i]?.tagAnimationDuration ?? 0.9,
-        textScale: prev.slides[i]?.textScale ?? 1,
+        titleH: prev.slides[i]?.titleH ?? 50,
+        titleV: prev.slides[i]?.titleV ?? 10,
+        titleFontScale: prev.slides[i]?.titleFontScale ?? 1,
+        titleColor: prev.slides[i]?.titleColor ?? "rgba(255,255,255,1)",
+        titleAlign: prev.slides[i]?.titleAlign ?? "center",
+        subtitleH: prev.slides[i]?.subtitleH ?? 50,
+        subtitleV: prev.slides[i]?.subtitleV ?? 85,
+        subtitleFontScale: prev.slides[i]?.subtitleFontScale ?? 1,
+        subtitleColor: prev.slides[i]?.subtitleColor ?? "rgba(255,255,255,0.75)",
+        subtitleAlign: prev.slides[i]?.subtitleAlign ?? "center",
       }));
       return {
         ...prev,
         isCarousel: newSlides.length > 1,
         slides: newSlides,
         currentSlideIndex: 0,
+      };
+    });
+  }, []);
+
+  // Group 3: handle multiple image files → create slides
+  const handleMultipleImages = useCallback((files: FileList) => {
+    const imageFiles = Array.from(files).filter((f) => f.type.startsWith("image/"));
+    if (imageFiles.length === 0) return;
+
+    setProject((prev) => {
+      const currentSlide = prev.slides[prev.currentSlideIndex];
+      const newSlides: SlideData[] = imageFiles.map((file, i) => ({
+        ...currentSlide,
+        id: `slide-${Date.now()}-${i}`,
+        imageUrl: URL.createObjectURL(file),
+        imageScale: 1,
+        imageOffsetX: 0,
+        imageOffsetY: 0,
+      }));
+
+      const baseSlides = [...prev.slides];
+      // Replace from current index
+      const insertAt = prev.currentSlideIndex;
+      const combined = [
+        ...baseSlides.slice(0, insertAt),
+        ...newSlides,
+        ...baseSlides.slice(insertAt + 1),
+      ];
+
+      return {
+        ...prev,
+        isCarousel: combined.length > 1,
+        slides: combined,
+        currentSlideIndex: insertAt,
       };
     });
   }, []);
@@ -244,8 +262,7 @@ function App() {
           </h1>
           <p className="text-sm sm:text-base font-light leading-[1.7] text-[#555] max-w-[540px]">
             Crie posts, stories e carrosséis com a identidade visual NEXO.
-            Texto manual ou gerado por IA, animações editoriais e exportação em
-            alta qualidade.
+            Texto manual ou gerado por IA e exportação em alta qualidade.
           </p>
         </div>
 
@@ -263,18 +280,13 @@ function App() {
               onSetCurrentSlide={handleSetCurrentSlide}
               onSetSlideCount={handleSetSlideCount}
               onSetCarousel={handleSetCarousel}
-              onSetAnimation={(a) =>
-                setProject((prev) => ({ ...prev, animation: a }))
-              }
-              onSetAnimationSpeed={(s) =>
-                setProject((prev) => ({ ...prev, animationSpeed: s }))
-              }
               onDuplicateSlide={handleDuplicateSlide}
               onDeleteSlide={handleDeleteSlide}
               onSetOutputFormat={(f) =>
                 setProject((prev) => ({ ...prev, outputFormat: f }))
               }
               onApplyCarousel={handleApplyCarousel}
+              onMultipleImages={handleMultipleImages}
             />
             <TemplatePreview
               project={project}

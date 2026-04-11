@@ -3,7 +3,6 @@ import {
   Search,
   Upload,
   Sparkles,
-  Film,
   Plus,
   Trash2,
   Copy,
@@ -19,7 +18,7 @@ import {
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
-import { ProjectState, SlideData, AnimationType, OutputFormat, TextPosition } from "../App";
+import { ProjectState, SlideData, OutputFormat } from "../App";
 import {
   CONTENT_CAROUSELS,
   CONTENT_SINGLES,
@@ -164,21 +163,6 @@ const AI_CAROUSEL_STORIES: Record<string, StorySequence> = {
   ],
 };
 
-// ── Animation config ─────────────────────────────────────────────────────────
-const ANIMATIONS: Array<{
-  id: AnimationType;
-  label: string;
-  description: string;
-  icon: string;
-}> = [
-    { id: "none", label: "Estático", description: "Sem animação", icon: "⏹" },
-    { id: "fade-in", label: "Fade In", description: "Aparece suavemente", icon: "🌅" },
-    { id: "slide-up", label: "Slide Up", description: "Sobe com fade", icon: "⬆" },
-    { id: "zoom-out", label: "Ken Burns", description: "Zoom out lento", icon: "🔭" },
-    { id: "reveal", label: "Reveal", description: "Texto revelado", icon: "✨" },
-    { id: "drift", label: "Drift", description: "Pan horizontal", icon: "🎬" },
-  ];
-
 // ── Props ─────────────────────────────────────────────────────────────────────
 interface Props {
   project: ProjectState;
@@ -187,15 +171,28 @@ interface Props {
   onSetCurrentSlide: (index: number) => void;
   onSetSlideCount: (count: number) => void;
   onSetCarousel: (isCarousel: boolean) => void;
-  onSetAnimation: (a: AnimationType) => void;
-  onSetAnimationSpeed: (s: number) => void;
   onDuplicateSlide: () => void;
   onDeleteSlide: () => void;
   onSetOutputFormat: (format: OutputFormat) => void;
   onApplyCarousel: (slides: ContentSlide[]) => void;
+  onMultipleImages: (files: FileList) => void;
 }
 
-type Tab = "texto" | "imagem" | "ia" | "biblioteca" | "animacao";
+type Tab = "texto" | "imagem" | "ia" | "biblioteca";
+type TextPanel = "titulo" | "subtitulo";
+
+// ── 3x3 grid positions for image (Group 2) ───────────────────────────────────
+const IMAGE_POSITIONS = [
+  { label: "↖", x: -100, y: -100, title: "Topo esquerda" },
+  { label: "↑",  x: 0,    y: -100, title: "Topo centro" },
+  { label: "↗", x: 100,  y: -100, title: "Topo direita" },
+  { label: "←", x: -100, y: 0,    title: "Meio esquerda" },
+  { label: "●",  x: 0,    y: 0,    title: "Centro" },
+  { label: "→", x: 100,  y: 0,    title: "Meio direita" },
+  { label: "↙", x: -100, y: 100,  title: "Base esquerda" },
+  { label: "↓",  x: 0,    y: 100,  title: "Base centro" },
+  { label: "↘", x: 100,  y: 100,  title: "Base direita" },
+];
 
 export function TemplateEditor({
   project,
@@ -204,14 +201,14 @@ export function TemplateEditor({
   onSetCurrentSlide,
   onSetSlideCount,
   onSetCarousel,
-  onSetAnimation,
-  onSetAnimationSpeed,
   onDuplicateSlide,
   onDeleteSlide,
   onSetOutputFormat,
   onApplyCarousel,
+  onMultipleImages,
 }: Props) {
   const [tab, setTab] = useState<Tab>("texto");
+  const [textPanel, setTextPanel] = useState<TextPanel>("titulo");
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   const [searchResults, setSearchResults] = useState<string[]>([]);
@@ -236,41 +233,28 @@ export function TemplateEditor({
     });
   }, [onUpdateSlide]);
 
-  const setImageOffset = useCallback(
-    (dx: number, dy: number) => {
-      onUpdateSlide({
-        imageOffsetX: Math.max(
-          -45,
-          Math.min(45, (currentSlide.imageOffsetX ?? 0) + dx)
-        ),
-        imageOffsetY: Math.max(
-          -45,
-          Math.min(45, (currentSlide.imageOffsetY ?? 0) + dy)
-        ),
-      });
-    },
-    [currentSlide.imageOffsetX, currentSlide.imageOffsetY, onUpdateSlide]
-  );
-
-  const setImageScale = useCallback(
-    (value: number) => {
-      onUpdateSlide({
-        imageScale: Math.max(0.8, Math.min(3, value)),
-      });
-    },
-    [onUpdateSlide]
-  );
-
   const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) handleFileUpload(file);
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    if (files.length === 1) {
+      handleFileUpload(files[0]);
+    } else {
+      onMultipleImages(files);
+    }
+    // Reset input so the same files can be re-selected
+    e.target.value = "";
   };
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setDragOver(false);
-    const file = e.dataTransfer.files?.[0];
-    if (file) handleFileUpload(file);
+    const files = e.dataTransfer.files;
+    if (!files || files.length === 0) return;
+    if (files.length === 1) {
+      handleFileUpload(files[0]);
+    } else {
+      onMultipleImages(files);
+    }
   };
 
   const handleSearchImage = async () => {
@@ -295,8 +279,7 @@ export function TemplateEditor({
 
   const handleGenerateAI = () => {
     setIsGenerating(true);
-    const sequence = AI_CAROUSEL_STORIES[aiCategory] || AI_CAROUSEL_STORIES["Fashion & Editorial"];
-
+    const sequence = AI_CAROUSEL_STORIES[aiCategory] || AI_CAROUSEL_STORIES["Portfólio"];
     setTimeout(() => {
       setGeneratedSequence(sequence);
       setIsGenerating(false);
@@ -310,7 +293,7 @@ export function TemplateEditor({
     setGeneratedSequence(null);
   };
 
-  // ── Shared input style ────────────────────────────────────────────────────
+  // ── Shared styles ─────────────────────────────────────────────────────────
   const inputClass =
     "w-full px-3.5 py-3 bg-[#F5F5F5] border border-[#E0E0E0] rounded-md text-[#0A0A0A] text-sm focus:outline-none focus:border-[#0A0A0A] focus:ring-1 focus:ring-[#0A0A0A] transition-colors";
 
@@ -320,14 +303,18 @@ export function TemplateEditor({
   const tabButtonClass =
     "flex-1 min-w-[68px] py-3 sm:py-3.5 text-[9px] sm:text-[10px] tracking-[0.14em] sm:tracking-[0.16em] uppercase font-semibold transition-all flex flex-col items-center justify-center gap-0.5";
 
-  const softButtonClass =
-    "vv-btn-ghost min-h-10";
+  const chipButtonClass = "vv-btn-chip";
 
-  const iconButtonClass =
-    "vv-btn-icon h-10 w-10";
+  // ── Text positioning helpers (Group 5/6) ──────────────────────────────────
+  const setTitleAlign = (align: "left" | "center" | "right") => {
+    const h = align === "left" ? 10 : align === "center" ? 50 : 90;
+    onUpdateSlide({ titleAlign: align, titleH: h });
+  };
 
-  const chipButtonClass =
-    "vv-btn-chip";
+  const setSubtitleAlign = (align: "left" | "center" | "right") => {
+    const h = align === "left" ? 10 : align === "center" ? 50 : 90;
+    onUpdateSlide({ subtitleAlign: align, subtitleH: h });
+  };
 
   return (
     <div className="bg-white rounded-[28px] border border-[#E0E0E0] overflow-hidden shadow-sm">
@@ -339,7 +326,6 @@ export function TemplateEditor({
             { id: "imagem", label: "Imagem", icon: "📷" },
             { id: "ia", label: "IA", icon: "✦" },
             { id: "biblioteca", label: "Biblioteca", icon: "≡" },
-            { id: "animacao", label: "Anim.", icon: "▶" },
           ] as const
         ).map((t) => (
           <button
@@ -368,7 +354,6 @@ export function TemplateEditor({
           </span>
         </div>
         <div className="flex w-full sm:w-auto items-center gap-2 flex-wrap sm:flex-nowrap">
-          {/* Format toggle */}
           <select
             value={project.outputFormat || "9:16"}
             onChange={(e) => onSetOutputFormat(e.target.value as OutputFormat)}
@@ -380,7 +365,6 @@ export function TemplateEditor({
             <option value="1:1">Post 1:1</option>
             <option value="16:9">Wide 16:9</option>
           </select>
-          {/* Carousel toggle */}
           <button
             onClick={() => onSetCarousel(!project.isCarousel)}
             className={`min-h-10 px-3 sm:px-4 py-2 rounded-full text-[8px] sm:text-[9px] tracking-[0.15em] sm:tracking-[0.18em] uppercase font-semibold transition-all whitespace-nowrap
@@ -441,130 +425,354 @@ export function TemplateEditor({
         {/* ─── TEXTO TAB ─────────────────────────────────────────────────── */}
         {tab === "texto" && (
           <>
-            <div>
-              <label className={labelClass}>Título Principal</label>
-              <textarea
-                value={currentSlide.title}
-                onChange={(e) => onUpdateSlide({ title: e.target.value })}
-                className={`${inputClass} font-[family-name:var(--font-display)] resize-none`}
-                style={{ fontSize: "22px", lineHeight: "1.1", letterSpacing: "0.02em" }}
-                rows={3}
-                placeholder={"TÍTULO EM\nCAIXA ALTA."}
-              />
-              <p className="text-[9px] text-[#AAA] mt-1.5">
-                Use Enter para quebrar linhas. Tudo será convertido para maiúsculas no template.
-              </p>
+            {/* Sub-panel toggle: Título / Subtítulo */}
+            <div className="flex gap-1 bg-[#F0F0F0] rounded-2xl p-1">
+              <button
+                onClick={() => setTextPanel("titulo")}
+                className={`flex-1 py-2 rounded-xl text-[10px] font-semibold tracking-[0.12em] uppercase transition-all
+                  ${textPanel === "titulo"
+                    ? "bg-white text-[#0A0A0A] shadow-sm"
+                    : "text-[#888] hover:text-[#444]"
+                  }`}
+              >
+                Título
+              </button>
+              <button
+                onClick={() => setTextPanel("subtitulo")}
+                className={`flex-1 py-2 rounded-xl text-[10px] font-semibold tracking-[0.12em] uppercase transition-all
+                  ${textPanel === "subtitulo"
+                    ? "bg-white text-[#0A0A0A] shadow-sm"
+                    : "text-[#888] hover:text-[#444]"
+                  }`}
+              >
+                Subtítulo
+              </button>
             </div>
 
-            <div>
-              <label className={labelClass}>Subtítulo / Corpo de Texto</label>
-              <textarea
-                value={currentSlide.subtitle}
-                onChange={(e) => onUpdateSlide({ subtitle: e.target.value })}
-                className={`${inputClass} resize-none`}
-                rows={4}
-                placeholder="Frase de apoio com a mensagem da marca..."
-              />
-            </div>
-
-            <div>
-              <label className={labelClass}>Tag / Label (opcional)</label>
-              <input
-                type="text"
-                value={currentSlide.tag || ""}
-                onChange={(e) => onUpdateSlide({ tag: e.target.value })}
-                className={inputClass}
-                placeholder="NEXO · 2025 · etc..."
-              />
-            </div>
-
-            {/* Text Position */}
-            <div className="pt-3 border-t border-[#EBEBEB]">
-              <label className={labelClass}>Posição do Texto</label>
-              <div className="grid grid-cols-3 gap-2">
-                {([
-                  { pos: "top" as TextPosition, label: "Topo", icon: "▲" },
-                  { pos: "center" as TextPosition, label: "Centro", icon: "●" },
-                  { pos: "bottom" as TextPosition, label: "Base", icon: "▼" },
-                ]).map(({ pos, label, icon }) => (
-                  <button
-                    key={pos}
-                    onClick={() => onUpdateSlide({ textPosition: pos })}
-                    className={`flex flex-col items-center gap-1 py-2.5 px-3 rounded-2xl border transition-all text-[10px] font-semibold tracking-[0.08em] uppercase
-                      ${(currentSlide.textPosition ?? "bottom") === pos
-                        ? "border-[#0A0A0A] bg-[#0A0A0A] text-white shadow-[0_12px_24px_rgba(10,10,10,0.12)]"
-                        : "border-[#E0E0E0] bg-[#FAFAFA] text-[#555] hover:border-[#0A0A0A]"
-                      }`}
-                  >
-                    <span className="text-sm leading-none">{icon}</span>
-                    {label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Text Scale */}
-            <div className="pt-3 border-t border-[#EBEBEB]">
-              <div className="flex items-center justify-between mb-2">
-                <label className={labelClass} style={{ marginBottom: 0 }}>Tamanho do Texto</label>
-                <div className="flex items-center gap-1.5">
-                  <button
-                    onClick={() => onUpdateSlide({ textScale: Math.max(0.75, (currentSlide.textScale ?? 1) - 0.05) })}
-                    className="w-7 h-7 rounded-lg border border-[#E0E0E0] bg-[#FAFAFA] text-[#555] text-sm font-bold hover:border-[#0A0A0A] hover:text-[#0A0A0A] transition-all flex items-center justify-center leading-none"
-                    title="Diminuir texto"
-                  >−</button>
-                  <span className="text-[11px] font-semibold text-[#0A0A0A] tabular-nums min-w-[36px] text-center">
-                    {Math.round((currentSlide.textScale ?? 1) * 100)}%
-                  </span>
-                  <button
-                    onClick={() => onUpdateSlide({ textScale: Math.min(1.4, (currentSlide.textScale ?? 1) + 0.05) })}
-                    className="w-7 h-7 rounded-lg border border-[#E0E0E0] bg-[#FAFAFA] text-[#555] text-sm font-bold hover:border-[#0A0A0A] hover:text-[#0A0A0A] transition-all flex items-center justify-center leading-none"
-                    title="Aumentar texto"
-                  >+</button>
-                  {(currentSlide.textScale ?? 1) !== 1 && (
-                    <button
-                      onClick={() => onUpdateSlide({ textScale: 1 })}
-                      className="w-7 h-7 rounded-lg border border-[#E0E0E0] bg-[#FAFAFA] text-[#888] text-[9px] font-semibold hover:border-[#0A0A0A] hover:text-[#0A0A0A] transition-all flex items-center justify-center tracking-[0.05em] uppercase"
-                      title="Resetar"
-                    >↺</button>
-                  )}
+            {/* ─ TÍTULO PANEL ─ */}
+            {textPanel === "titulo" && (
+              <>
+                <div>
+                  <label className={labelClass}>Título Principal</label>
+                  <textarea
+                    value={currentSlide.title}
+                    onChange={(e) => onUpdateSlide({ title: e.target.value })}
+                    className={`${inputClass} font-[family-name:var(--font-display)] resize-none`}
+                    style={{ fontSize: "22px", lineHeight: "1.1", letterSpacing: "0.02em" }}
+                    rows={3}
+                    placeholder={"TÍTULO EM\nCAIXA ALTA."}
+                  />
+                  <p className="text-[9px] text-[#AAA] mt-1.5">
+                    Use Enter para quebrar linhas. Tudo será convertido para maiúsculas no template.
+                  </p>
                 </div>
-              </div>
-              <input
-                type="range"
-                min={75}
-                max={140}
-                step={5}
-                value={Math.round((currentSlide.textScale ?? 1) * 100)}
-                onChange={(e) => onUpdateSlide({ textScale: Number(e.target.value) / 100 })}
-                className="w-full h-[3px] accent-[#0A0A0A] cursor-pointer"
-              />
-              <div className="flex justify-between text-[9px] text-[#AAA] mt-1 font-medium tracking-[0.06em]">
-                <span>75%</span>
-                <span>Padrão</span>
-                <span>140%</span>
-              </div>
-            </div>
 
-            {/* Quick presets */}
-            <div className="pt-3 border-t border-[#EBEBEB]">
-              <label className={labelClass}>Presets Rápidos</label>
-              <div className="flex flex-wrap gap-2">
-                {[
-                  { t: "CADA FRAME\nÉ UMA\nDECISÃO.", s: "Fotografia com direção de cena e sensibilidade editorial." },
-                  { t: "MESTRIA NÃO\nSE IMPROVISA.", s: "Se constrói quadro a quadro. Hub criativo com intenção." },
-                  { t: "A HISTÓRIA\nEXISTE ANTES\nDAS IMAGENS.", s: "Narrativa com imagem é comunicação." },
-                ].map((p, i) => (
-                  <button
-                    key={i}
-                    onClick={() => onUpdateSlide({ title: p.t, subtitle: p.s })}
-                    className={chipButtonClass}
-                  >
-                    {p.t.split("\n")[0]}...
-                  </button>
-                ))}
-              </div>
-            </div>
+                <div>
+                  <label className={labelClass}>Tag / Label (opcional)</label>
+                  <input
+                    type="text"
+                    value={currentSlide.tag || ""}
+                    onChange={(e) => onUpdateSlide({ tag: e.target.value })}
+                    className={inputClass}
+                    placeholder="NEXO · 2025 · etc..."
+                  />
+                </div>
+
+                {/* Posição H+V */}
+                <div className="pt-3 border-t border-[#EBEBEB] space-y-4">
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <label className={labelClass} style={{ marginBottom: 0 }}>Posição Horizontal</label>
+                      <span className="text-[11px] font-semibold text-[#0A0A0A] tabular-nums">
+                        {currentSlide.titleH ?? 50}%
+                      </span>
+                    </div>
+                    <div className="flex gap-2 mb-2">
+                      {(["left", "center", "right"] as const).map((a) => (
+                        <button
+                          key={a}
+                          onClick={() => setTitleAlign(a)}
+                          className={`flex-1 py-1.5 rounded-lg border text-[9px] font-semibold uppercase tracking-[0.08em] transition-all
+                            ${(currentSlide.titleAlign ?? "center") === a
+                              ? "border-[#0A0A0A] bg-[#0A0A0A] text-white"
+                              : "border-[#E0E0E0] bg-[#FAFAFA] text-[#555] hover:border-[#0A0A0A]"
+                            }`}
+                        >
+                          {a === "left" ? "⬅ Esq" : a === "center" ? "● Centro" : "Dir ➡"}
+                        </button>
+                      ))}
+                    </div>
+                    <input
+                      type="range"
+                      min={0}
+                      max={100}
+                      step={1}
+                      value={currentSlide.titleH ?? 50}
+                      onChange={(e) => onUpdateSlide({ titleH: Number(e.target.value) })}
+                      className="w-full h-[3px] accent-[#0A0A0A] cursor-pointer"
+                    />
+                    <div className="flex justify-between text-[9px] text-[#AAA] mt-1">
+                      <span>Esquerda</span><span>Centro</span><span>Direita</span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <label className={labelClass} style={{ marginBottom: 0 }}>Posição Vertical</label>
+                      <span className="text-[11px] font-semibold text-[#0A0A0A] tabular-nums">
+                        {currentSlide.titleV ?? 10}%
+                      </span>
+                    </div>
+                    <input
+                      type="range"
+                      min={0}
+                      max={100}
+                      step={1}
+                      value={currentSlide.titleV ?? 10}
+                      onChange={(e) => onUpdateSlide({ titleV: Number(e.target.value) })}
+                      className="w-full h-[3px] accent-[#0A0A0A] cursor-pointer"
+                    />
+                    <div className="flex justify-between text-[9px] text-[#AAA] mt-1">
+                      <span>Topo</span><span>Centro</span><span>Base</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Tamanho da fonte */}
+                <div className="pt-3 border-t border-[#EBEBEB]">
+                  <div className="flex items-center justify-between mb-2">
+                    <label className={labelClass} style={{ marginBottom: 0 }}>Tamanho do Título</label>
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        onClick={() => onUpdateSlide({ titleFontScale: Math.max(0.75, (currentSlide.titleFontScale ?? 1) - 0.05) })}
+                        className="w-7 h-7 rounded-lg border border-[#E0E0E0] bg-[#FAFAFA] text-[#555] text-sm font-bold hover:border-[#0A0A0A] hover:text-[#0A0A0A] transition-all flex items-center justify-center leading-none"
+                      >−</button>
+                      <span className="text-[11px] font-semibold text-[#0A0A0A] tabular-nums min-w-[36px] text-center">
+                        {Math.round((currentSlide.titleFontScale ?? 1) * 100)}%
+                      </span>
+                      <button
+                        onClick={() => onUpdateSlide({ titleFontScale: Math.min(1.4, (currentSlide.titleFontScale ?? 1) + 0.05) })}
+                        className="w-7 h-7 rounded-lg border border-[#E0E0E0] bg-[#FAFAFA] text-[#555] text-sm font-bold hover:border-[#0A0A0A] hover:text-[#0A0A0A] transition-all flex items-center justify-center leading-none"
+                      >+</button>
+                    </div>
+                  </div>
+                  <input
+                    type="range"
+                    min={75}
+                    max={140}
+                    step={5}
+                    value={Math.round((currentSlide.titleFontScale ?? 1) * 100)}
+                    onChange={(e) => onUpdateSlide({ titleFontScale: Number(e.target.value) / 100 })}
+                    className="w-full h-[3px] accent-[#0A0A0A] cursor-pointer"
+                  />
+                  <div className="flex justify-between text-[9px] text-[#AAA] mt-1">
+                    <span>75%</span><span>Padrão</span><span>140%</span>
+                  </div>
+                </div>
+
+                {/* Cor do título */}
+                <div className="pt-3 border-t border-[#EBEBEB]">
+                  <label className={labelClass}>Cor do Título</label>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="color"
+                      value={(() => {
+                        const c = currentSlide.titleColor ?? "rgba(255,255,255,1)";
+                        const m = c.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+                        if (!m) return "#ffffff";
+                        return `#${Number(m[1]).toString(16).padStart(2,"0")}${Number(m[2]).toString(16).padStart(2,"0")}${Number(m[3]).toString(16).padStart(2,"0")}`;
+                      })()}
+                      onChange={(e) => {
+                        const hex = e.target.value;
+                        const r = parseInt(hex.slice(1,3),16);
+                        const g = parseInt(hex.slice(3,5),16);
+                        const b = parseInt(hex.slice(5,7),16);
+                        onUpdateSlide({ titleColor: `rgba(${r},${g},${b},1)` });
+                      }}
+                      className="w-10 h-10 rounded-lg border border-[#E0E0E0] cursor-pointer p-0.5"
+                    />
+                    <div className="flex gap-1.5 flex-wrap">
+                      {["rgba(255,255,255,1)","rgba(255,255,255,0.75)","rgba(10,10,10,1)","rgba(200,200,200,1)"].map((c) => (
+                        <button
+                          key={c}
+                          onClick={() => onUpdateSlide({ titleColor: c })}
+                          className="w-7 h-7 rounded-full border-2 transition-all"
+                          style={{
+                            background: c,
+                            borderColor: (currentSlide.titleColor ?? "rgba(255,255,255,1)") === c ? "#0A0A0A" : "#E0E0E0",
+                          }}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Presets rápidos */}
+                <div className="pt-3 border-t border-[#EBEBEB]">
+                  <label className={labelClass}>Presets Rápidos</label>
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      { t: "CADA FRAME\nÉ UMA\nDECISÃO.", s: "Fotografia com direção de cena e sensibilidade editorial." },
+                      { t: "MESTRIA NÃO\nSE IMPROVISA.", s: "Se constrói quadro a quadro. Hub criativo com intenção." },
+                      { t: "A HISTÓRIA\nEXISTE ANTES\nDAS IMAGENS.", s: "Narrativa com imagem é comunicação." },
+                    ].map((p, i) => (
+                      <button
+                        key={i}
+                        onClick={() => onUpdateSlide({ title: p.t, subtitle: p.s })}
+                        className={chipButtonClass}
+                      >
+                        {p.t.split("\n")[0]}...
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* ─ SUBTÍTULO PANEL ─ */}
+            {textPanel === "subtitulo" && (
+              <>
+                <div>
+                  <label className={labelClass}>Subtítulo / Corpo de Texto</label>
+                  <textarea
+                    value={currentSlide.subtitle}
+                    onChange={(e) => onUpdateSlide({ subtitle: e.target.value })}
+                    className={`${inputClass} resize-none`}
+                    rows={4}
+                    placeholder="Frase de apoio com a mensagem da marca..."
+                  />
+                </div>
+
+                {/* Posição H+V */}
+                <div className="pt-3 border-t border-[#EBEBEB] space-y-4">
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <label className={labelClass} style={{ marginBottom: 0 }}>Posição Horizontal</label>
+                      <span className="text-[11px] font-semibold text-[#0A0A0A] tabular-nums">
+                        {currentSlide.subtitleH ?? 50}%
+                      </span>
+                    </div>
+                    <div className="flex gap-2 mb-2">
+                      {(["left", "center", "right"] as const).map((a) => (
+                        <button
+                          key={a}
+                          onClick={() => setSubtitleAlign(a)}
+                          className={`flex-1 py-1.5 rounded-lg border text-[9px] font-semibold uppercase tracking-[0.08em] transition-all
+                            ${(currentSlide.subtitleAlign ?? "center") === a
+                              ? "border-[#0A0A0A] bg-[#0A0A0A] text-white"
+                              : "border-[#E0E0E0] bg-[#FAFAFA] text-[#555] hover:border-[#0A0A0A]"
+                            }`}
+                        >
+                          {a === "left" ? "⬅ Esq" : a === "center" ? "● Centro" : "Dir ➡"}
+                        </button>
+                      ))}
+                    </div>
+                    <input
+                      type="range"
+                      min={0}
+                      max={100}
+                      step={1}
+                      value={currentSlide.subtitleH ?? 50}
+                      onChange={(e) => onUpdateSlide({ subtitleH: Number(e.target.value) })}
+                      className="w-full h-[3px] accent-[#0A0A0A] cursor-pointer"
+                    />
+                    <div className="flex justify-between text-[9px] text-[#AAA] mt-1">
+                      <span>Esquerda</span><span>Centro</span><span>Direita</span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <label className={labelClass} style={{ marginBottom: 0 }}>Posição Vertical</label>
+                      <span className="text-[11px] font-semibold text-[#0A0A0A] tabular-nums">
+                        {currentSlide.subtitleV ?? 85}%
+                      </span>
+                    </div>
+                    <input
+                      type="range"
+                      min={0}
+                      max={100}
+                      step={1}
+                      value={currentSlide.subtitleV ?? 85}
+                      onChange={(e) => onUpdateSlide({ subtitleV: Number(e.target.value) })}
+                      className="w-full h-[3px] accent-[#0A0A0A] cursor-pointer"
+                    />
+                    <div className="flex justify-between text-[9px] text-[#AAA] mt-1">
+                      <span>Topo</span><span>Centro</span><span>Base</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Tamanho da fonte */}
+                <div className="pt-3 border-t border-[#EBEBEB]">
+                  <div className="flex items-center justify-between mb-2">
+                    <label className={labelClass} style={{ marginBottom: 0 }}>Tamanho do Subtítulo</label>
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        onClick={() => onUpdateSlide({ subtitleFontScale: Math.max(0.75, (currentSlide.subtitleFontScale ?? 1) - 0.05) })}
+                        className="w-7 h-7 rounded-lg border border-[#E0E0E0] bg-[#FAFAFA] text-[#555] text-sm font-bold hover:border-[#0A0A0A] hover:text-[#0A0A0A] transition-all flex items-center justify-center leading-none"
+                      >−</button>
+                      <span className="text-[11px] font-semibold text-[#0A0A0A] tabular-nums min-w-[36px] text-center">
+                        {Math.round((currentSlide.subtitleFontScale ?? 1) * 100)}%
+                      </span>
+                      <button
+                        onClick={() => onUpdateSlide({ subtitleFontScale: Math.min(1.4, (currentSlide.subtitleFontScale ?? 1) + 0.05) })}
+                        className="w-7 h-7 rounded-lg border border-[#E0E0E0] bg-[#FAFAFA] text-[#555] text-sm font-bold hover:border-[#0A0A0A] hover:text-[#0A0A0A] transition-all flex items-center justify-center leading-none"
+                      >+</button>
+                    </div>
+                  </div>
+                  <input
+                    type="range"
+                    min={75}
+                    max={140}
+                    step={5}
+                    value={Math.round((currentSlide.subtitleFontScale ?? 1) * 100)}
+                    onChange={(e) => onUpdateSlide({ subtitleFontScale: Number(e.target.value) / 100 })}
+                    className="w-full h-[3px] accent-[#0A0A0A] cursor-pointer"
+                  />
+                  <div className="flex justify-between text-[9px] text-[#AAA] mt-1">
+                    <span>75%</span><span>Padrão</span><span>140%</span>
+                  </div>
+                </div>
+
+                {/* Cor do subtítulo */}
+                <div className="pt-3 border-t border-[#EBEBEB]">
+                  <label className={labelClass}>Cor do Subtítulo</label>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="color"
+                      value={(() => {
+                        const c = currentSlide.subtitleColor ?? "rgba(255,255,255,0.75)";
+                        const m = c.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+                        if (!m) return "#ffffff";
+                        return `#${Number(m[1]).toString(16).padStart(2,"0")}${Number(m[2]).toString(16).padStart(2,"0")}${Number(m[3]).toString(16).padStart(2,"0")}`;
+                      })()}
+                      onChange={(e) => {
+                        const hex = e.target.value;
+                        const r = parseInt(hex.slice(1,3),16);
+                        const g = parseInt(hex.slice(3,5),16);
+                        const b = parseInt(hex.slice(5,7),16);
+                        onUpdateSlide({ subtitleColor: `rgba(${r},${g},${b},0.85)` });
+                      }}
+                      className="w-10 h-10 rounded-lg border border-[#E0E0E0] cursor-pointer p-0.5"
+                    />
+                    <div className="flex gap-1.5 flex-wrap">
+                      {["rgba(255,255,255,0.75)","rgba(255,255,255,0.5)","rgba(200,200,200,1)","rgba(10,10,10,1)"].map((c) => (
+                        <button
+                          key={c}
+                          onClick={() => onUpdateSlide({ subtitleColor: c })}
+                          className="w-7 h-7 rounded-full border-2 transition-all"
+                          style={{
+                            background: c,
+                            borderColor: (currentSlide.subtitleColor ?? "rgba(255,255,255,0.75)") === c ? "#0A0A0A" : "#E0E0E0",
+                          }}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
           </>
         )}
 
@@ -579,11 +787,11 @@ export function TemplateEditor({
                       Upload por slide
                     </p>
                     <p className="text-[9px] text-[#555] leading-relaxed max-w-xl">
-                      Cada slide recebe sua imagem. Selecione o slide e carregue sua foto para mantê-la ligada ao frame correspondente.
+                      Selecione o slide e carregue sua foto. Importe múltiplas fotos de uma vez para criar slides automaticamente.
                     </p>
                   </div>
                   <span className="text-[9px] uppercase tracking-[0.18em] text-[#0A0A0A] font-semibold">
-                    {project.slides.length} imagens possíveis
+                    {project.slides.length} slides
                   </span>
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -599,19 +807,15 @@ export function TemplateEditor({
                     >
                       <div className="relative h-24 bg-[#E8E8E8]">
                         {slide.imageUrl ? (
-                          <img
-                            src={slide.imageUrl}
-                            alt={`Slide ${index + 1}`}
-                            className="w-full h-full object-cover"
-                          />
+                          <img src={slide.imageUrl} alt={`Slide ${index + 1}`} className="w-full h-full object-cover" />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center text-[10px] uppercase tracking-[0.22em] text-[#777] font-semibold">
                             Slide {index + 1}
                           </div>
                         )}
                         <div className="absolute inset-x-0 bottom-0 bg-black/60 text-white text-[8px] uppercase tracking-[0.2em] px-2 py-1 flex items-center justify-between">
-                          <span>Slide {index + 1}</span>
-                          <span>{slide.imageUrl ? "Imagem" : "Sem imagem"}</span>
+                          <span>{index + 1}</span>
+                          <span>{slide.imageUrl ? "✓" : "—"}</span>
                         </div>
                       </div>
                     </button>
@@ -620,6 +824,7 @@ export function TemplateEditor({
               </div>
             )}
 
+            {/* Upload area — Group 3: multiple files */}
             <div>
               <label className={labelClass}>Importar do Dispositivo</label>
               <div
@@ -634,14 +839,15 @@ export function TemplateEditor({
                   }`}
               >
                 <Upload size={20} className="text-[#888] mb-1.5" />
-                <p className="text-[11px] text-[#888] tracking-wide">
+                <p className="text-[11px] text-[#888] tracking-wide text-center px-4">
                   Arrastar & soltar ou <span className="text-[#0A0A0A] font-semibold">clique para selecionar</span>
                 </p>
-                <p className="text-[9px] text-[#AAA] mt-1">PNG, JPG, WEBP · até 20MB</p>
+                <p className="text-[9px] text-[#AAA] mt-1">PNG, JPG, WEBP · Múltiplas fotos criam slides automaticamente</p>
                 <input
                   ref={fileInputRef}
                   type="file"
                   accept="image/*"
+                  multiple
                   className="sr-only"
                   onChange={handleFileInputChange}
                 />
@@ -659,133 +865,134 @@ export function TemplateEditor({
               />
             </div>
 
-            <div className="border-t border-[#EBEBEB] pt-4 space-y-4">
-              <div className="grid gap-3 sm:grid-cols-[1fr_minmax(160px,220px)] items-end">
-                <div>
-                  <label className={labelClass}>Posicionamento da imagem</label>
-                  <div className="grid grid-cols-[auto_1fr_auto] gap-2 items-center">
+            {/* Search unsplash */}
+            <div>
+              <label className={labelClass}>Buscar imagem (Unsplash)</label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleSearchImage()}
+                  className={inputClass}
+                  placeholder="Ex: architecture, portrait..."
+                />
+                <button
+                  onClick={handleSearchImage}
+                  disabled={isSearching}
+                  className="vv-btn-secondary min-h-[46px] px-3"
+                >
+                  <Search size={14} />
+                </button>
+              </div>
+              {searchResults.length > 0 && (
+                <div className="mt-2 grid grid-cols-3 gap-1.5">
+                  {searchResults.map((url, i) => (
                     <button
-                      type="button"
-                      onClick={() => setImageOffset(0, -5)}
-                      className={softButtonClass}
+                      key={i}
+                      onClick={() => onUpdateSlide({ imageUrl: url })}
+                      className="relative rounded-lg overflow-hidden aspect-square border-2 border-transparent hover:border-[#0A0A0A] transition-all"
                     >
-                      Cima
+                      <img src={url} alt="" className="w-full h-full object-cover" />
                     </button>
-                    <div className="grid grid-cols-2 gap-2">
-                      <button
-                        type="button"
-                        onClick={() => setImageOffset(-5, 0)}
-                        className={softButtonClass}
-                      >
-                        Esquerda
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setImageOffset(5, 0)}
-                        className={softButtonClass}
-                      >
-                        Direita
-                      </button>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setImageOffset(0, 5)}
-                      className={softButtonClass}
-                    >
-                      Baixo
-                    </button>
-                  </div>
+                  ))}
                 </div>
+              )}
+            </div>
 
-                <div>
-                  <label className={labelClass}>Zoom / Corte</label>
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setImageScale((currentSlide.imageScale ?? 1) - 0.1)}
-                      className={softButtonClass}
-                    >
-                      -
-                    </button>
-                    <input
-                      type="range"
-                      min="0.8"
-                      max="3"
-                      step="0.05"
-                      value={currentSlide.imageScale ?? 1}
-                      onChange={(e) => setImageScale(Number(e.target.value))}
-                      className="flex-1 accent-[#0A0A0A]"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setImageScale((currentSlide.imageScale ?? 1) + 0.1)}
-                      className={softButtonClass}
-                    >
-                      +
-                    </button>
-                  </div>
-                  <p className="text-[9px] text-[#888] mt-1">
-                    Zoom: {(currentSlide.imageScale ?? 1).toFixed(2)}× • Use o corte para ajustar o enquadramento.
-                  </p>
+            {/* Image positioning — Group 2: 3x3 grid */}
+            <div className="border-t border-[#EBEBEB] pt-4 space-y-4">
+              <div>
+                <label className={labelClass}>Posição da Imagem</label>
+                <div
+                  className="grid gap-1.5"
+                  style={{ gridTemplateColumns: "repeat(3, 1fr)", width: "144px" }}
+                >
+                  {IMAGE_POSITIONS.map((pos) => {
+                    const isActive =
+                      (currentSlide.imageOffsetX ?? 0) === pos.x &&
+                      (currentSlide.imageOffsetY ?? 0) === pos.y;
+                    return (
+                      <button
+                        key={pos.title}
+                        type="button"
+                        title={pos.title}
+                        onClick={() => onUpdateSlide({ imageOffsetX: pos.x, imageOffsetY: pos.y })}
+                        className={`h-10 w-10 rounded-lg border text-sm font-bold transition-all flex items-center justify-center
+                          ${isActive
+                            ? "border-[#0A0A0A] bg-[#0A0A0A] text-white"
+                            : "border-[#E0E0E0] bg-[#FAFAFA] text-[#555] hover:border-[#0A0A0A]"
+                          }`}
+                      >
+                        {pos.label}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
-              <div className="grid gap-3 sm:grid-cols-2">
+              {/* Fine X/Y control — Group 2: -100 to +100 */}
+              <div className="rounded-xl border border-[#E0E0E0] bg-[#F8F8F8] p-3 space-y-3">
+                <p className="text-[10px] uppercase tracking-[0.18em] text-[#888] font-semibold">
+                  Ajuste fino de posição
+                </p>
                 <div>
-                  <p className="text-[10px] uppercase tracking-[0.18em] text-[#888] font-semibold mb-2">
-                    Corpo do ajuste
-                  </p>
-                  <div className="rounded-xl border border-[#E0E0E0] overflow-hidden bg-[#F8F8F8] p-3">
-                    <div className="flex items-center justify-between text-[9px] text-[#555]">
-                      <span>Horizontal: {(currentSlide.imageOffsetX ?? 0).toFixed(0)}%</span>
-                      <span>Vertical: {(currentSlide.imageOffsetY ?? 0).toFixed(0)}%</span>
-                    </div>
-                    <div className="mt-3 grid gap-2">
-                      <div className="flex items-center justify-between text-[9px] text-[#888]">
-                        <span>Esquerda / Direita</span>
-                        <span>{(currentSlide.imageOffsetX ?? 0).toFixed(0)}%</span>
-                      </div>
-                      <input
-                        type="range"
-                        min="-45"
-                        max="45"
-                        step="1"
-                        value={currentSlide.imageOffsetX ?? 0}
-                        onChange={(e) => onUpdateSlide({ imageOffsetX: Number(e.target.value) })}
-                        className="accent-[#0A0A0A]"
-                      />
-                      <div className="flex items-center justify-between text-[9px] text-[#888]">
-                        <span>Topo / Base</span>
-                        <span>{(currentSlide.imageOffsetY ?? 0).toFixed(0)}%</span>
-                      </div>
-                      <input
-                        type="range"
-                        min="-45"
-                        max="45"
-                        step="1"
-                        value={currentSlide.imageOffsetY ?? 0}
-                        onChange={(e) => onUpdateSlide({ imageOffsetY: Number(e.target.value) })}
-                        className="accent-[#0A0A0A]"
-                      />
-                    </div>
+                  <div className="flex items-center justify-between text-[9px] text-[#888] mb-1">
+                    <span>Esquerda / Direita</span>
+                    <span className="font-semibold text-[#0A0A0A]">{currentSlide.imageOffsetX ?? 0}%</span>
                   </div>
+                  <input
+                    type="range"
+                    min="-100"
+                    max="100"
+                    step="1"
+                    value={currentSlide.imageOffsetX ?? 0}
+                    onChange={(e) => onUpdateSlide({ imageOffsetX: Number(e.target.value) })}
+                    className="w-full accent-[#0A0A0A]"
+                  />
                 </div>
-
                 <div>
-                  <p className="text-[10px] uppercase tracking-[0.18em] text-[#888] font-semibold mb-2">
-                    Status de upload
-                  </p>
-                  <div className="rounded-xl border border-[#E0E0E0] bg-[#F8F8F8] p-3 text-[11px] leading-relaxed text-[#444]">
-                    <p className="font-semibold mb-2">Slide {project.currentSlideIndex + 1}</p>
-                    <p>{currentSlide.imageUrl ? "Imagem vinculada ao slide atual." : "Nenhuma imagem carregada para este slide."}</p>
-                    <p className="mt-2 text-[10px] text-[#888]">
-                      Ao alternar slides, o editor mantém a correspondência entre Slide e Imagem.
-                    </p>
+                  <div className="flex items-center justify-between text-[9px] text-[#888] mb-1">
+                    <span>Topo / Base</span>
+                    <span className="font-semibold text-[#0A0A0A]">{currentSlide.imageOffsetY ?? 0}%</span>
                   </div>
+                  <input
+                    type="range"
+                    min="-100"
+                    max="100"
+                    step="1"
+                    value={currentSlide.imageOffsetY ?? 0}
+                    onChange={(e) => onUpdateSlide({ imageOffsetY: Number(e.target.value) })}
+                    className="w-full accent-[#0A0A0A]"
+                  />
+                </div>
+              </div>
+
+              {/* Zoom — Group 2: 100%-300% */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className={labelClass} style={{ marginBottom: 0 }}>Zoom / Corte</label>
+                  <span className="text-[11px] font-semibold text-[#0A0A0A] tabular-nums">
+                    {Math.round((currentSlide.imageScale ?? 1) * 100)}%
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min="100"
+                  max="300"
+                  step="5"
+                  value={Math.round((currentSlide.imageScale ?? 1) * 100)}
+                  onChange={(e) => onUpdateSlide({ imageScale: Number(e.target.value) / 100 })}
+                  className="w-full accent-[#0A0A0A]"
+                />
+                <div className="flex justify-between text-[9px] text-[#AAA] mt-1">
+                  <span>100% (original)</span>
+                  <span>300%</span>
                 </div>
               </div>
             </div>
 
+            {/* Overlay */}
             <div className="border-t border-[#EBEBEB] pt-4">
               <div className="flex items-center gap-2 mb-2">
                 <Droplet size={14} className="text-[#0A0A0A]" />
@@ -806,23 +1013,14 @@ export function TemplateEditor({
                 <span>Transparente</span>
                 <span>Escuro</span>
               </div>
-              <p className="text-[10px] text-[#888] mt-2 leading-relaxed">
-                Ajuste o contraste entre imagem e tipografia. O overlay preserva a nitidez do texto e mantém a foto como pano de fundo.
-              </p>
             </div>
 
             {currentSlide.imageUrl && (
               <div className="relative rounded-lg overflow-hidden bg-[#F0F0F0]" style={{ height: "160px" }}>
-                <img
-                  src={currentSlide.imageUrl}
-                  alt="Preview"
-                  className="w-full h-full object-cover"
-                />
+                <img src={currentSlide.imageUrl} alt="Preview" className="w-full h-full object-cover" />
                 <div
                   className="absolute inset-0"
-                  style={{
-                    background: `rgba(10, 10, 10, ${(currentSlide.overlayOpacity ?? 70) / 100})`,
-                  }}
+                  style={{ background: `rgba(10, 10, 10, ${(currentSlide.overlayOpacity ?? 70) / 100})` }}
                 />
                 <button
                   onClick={() => onUpdateSlide({ imageUrl: "" })}
@@ -838,12 +1036,38 @@ export function TemplateEditor({
               </div>
             )}
 
-            {!currentSlide.imageUrl && (
-              <div className="rounded-xl border border-[#E0E0E0] bg-[#FFFAF0] p-4 text-[11px] text-[#665222]">
-                <p className="font-semibold mb-2">Faltam imagens</p>
-                <p>
-                  {project.slides.filter((slide) => !slide.imageUrl).length} slide(s) ainda não têm imagem. Garanta que cada slide tenha imagem antes de exportar.
-                </p>
+            {/* Slide controls */}
+            {project.isCarousel && (
+              <div className="border-t border-[#EBEBEB] pt-4 flex gap-2 flex-wrap">
+                <button onClick={onDuplicateSlide} className="vv-btn-secondary flex-1 min-h-10 text-[9px]">
+                  <Copy size={12} /> Duplicar
+                </button>
+                <button
+                  onClick={onDeleteSlide}
+                  disabled={project.slides.length <= 1}
+                  className="vv-btn-danger flex-1 min-h-10 text-[9px]"
+                >
+                  <Trash2 size={12} /> Remover
+                </button>
+                <div className="flex items-center gap-1 flex-shrink-0">
+                  <button
+                    onClick={() => onSetCurrentSlide(Math.max(0, project.currentSlideIndex - 1))}
+                    disabled={project.currentSlideIndex === 0}
+                    className="vv-btn-icon h-10 w-10"
+                  >
+                    <ChevronLeft size={14} />
+                  </button>
+                  <span className="text-[10px] text-[#888] font-medium min-w-[44px] text-center">
+                    {project.currentSlideIndex + 1}/{project.slides.length}
+                  </span>
+                  <button
+                    onClick={() => onSetCurrentSlide(Math.min(project.slides.length - 1, project.currentSlideIndex + 1))}
+                    disabled={project.currentSlideIndex === project.slides.length - 1}
+                    className="vv-btn-icon h-10 w-10"
+                  >
+                    <ChevronRight size={14} />
+                  </button>
+                </div>
               </div>
             )}
           </>
@@ -988,7 +1212,6 @@ export function TemplateEditor({
 
           return (
             <>
-              {/* Header */}
               <div className="flex items-center gap-2 mb-1">
                 <BookOpen size={15} className="text-[#0A0A0A]" />
                 <p className="text-sm font-semibold text-[#0A0A0A]">
@@ -996,11 +1219,9 @@ export function TemplateEditor({
                 </p>
               </div>
               <p className="text-[11px] text-[#888] leading-relaxed mb-4">
-                {CONTENT_CAROUSELS.length} carrosséis e {CONTENT_SINGLES.length} posts únicos prontos para aplicar ao seu template.
-                Clique em um conteúdo para aplicá-lo diretamente.
+                {CONTENT_CAROUSELS.length} carrosséis e {CONTENT_SINGLES.length} posts únicos prontos para aplicar.
               </p>
 
-              {/* Mode toggle */}
               <div className="flex gap-2 mb-4">
                 <button
                   onClick={() => { setBibMode("carousel"); setBibFilter("Todos"); }}
@@ -1026,7 +1247,6 @@ export function TemplateEditor({
                 </button>
               </div>
 
-              {/* Pilar filter */}
               <div className="mb-4">
                 <p className="text-[9px] tracking-[0.15em] uppercase text-[#888] font-semibold mb-2">Filtrar por pilar</p>
                 <div className="flex flex-wrap gap-1.5">
@@ -1046,17 +1266,12 @@ export function TemplateEditor({
                 </div>
               </div>
 
-              {/* Carousel cards */}
               {bibMode === "carousel" && (
                 <div className="space-y-2">
                   {filteredCarousels.map((carousel) => {
                     const isExpanded = expandedCarousel === carousel.id;
                     return (
-                      <div
-                        key={carousel.id}
-                        className="border border-[#E0E0E0] rounded-lg overflow-hidden"
-                      >
-                        {/* Card header */}
+                      <div key={carousel.id} className="border border-[#E0E0E0] rounded-lg overflow-hidden">
                         <div className="bg-[#FAFAFA] px-4 py-3">
                           <div className="flex items-start justify-between gap-2">
                             <div className="flex-1 min-w-0">
@@ -1079,19 +1294,13 @@ export function TemplateEditor({
                               {isExpanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
                             </button>
                           </div>
-
                           <button
-                            onClick={() => {
-                              onApplyCarousel(carousel.slides);
-                              setTab("texto");
-                            }}
+                            onClick={() => { onApplyCarousel(carousel.slides); setTab("texto"); }}
                             className="vv-btn mt-2.5 w-full min-h-10 text-[9px]"
                           >
                             Aplicar Carrossel Completo →
                           </button>
                         </div>
-
-                        {/* Expanded slides preview */}
                         {isExpanded && (
                           <div className="border-t border-[#E0E0E0] divide-y divide-[#F0F0F0]">
                             {carousel.slides.map((slide, idx) => (
@@ -1110,11 +1319,6 @@ export function TemplateEditor({
                                     <p className="text-[10px] text-[#777] leading-relaxed line-clamp-2">
                                       {slide.subtitle}
                                     </p>
-                                    {slide.cta && (
-                                      <p className="mt-1 text-[8px] tracking-[0.1em] uppercase text-[#0A0A0A] font-bold">
-                                        CTA: {slide.cta}
-                                      </p>
-                                    )}
                                   </div>
                                   <button
                                     onClick={() => {
@@ -1136,14 +1340,10 @@ export function TemplateEditor({
                 </div>
               )}
 
-              {/* Single cards */}
               {bibMode === "single" && (
                 <div className="space-y-2">
                   {filteredSingles.map((single) => (
-                    <div
-                      key={single.id}
-                      className="border border-[#E0E0E0] rounded-lg overflow-hidden bg-[#FAFAFA]"
-                    >
+                    <div key={single.id} className="border border-[#E0E0E0] rounded-lg overflow-hidden bg-[#FAFAFA]">
                       <div className="px-4 py-3">
                         <div className="flex items-start justify-between gap-2">
                           <div className="flex-1 min-w-0">
@@ -1181,222 +1381,7 @@ export function TemplateEditor({
             </>
           );
         })()}
-
-        {/* ─── ANIMAÇÃO TAB ──────────────────────────────────────────────── */}
-        {tab === "animacao" && (
-          <>
-            <div className="flex items-center gap-2 mb-1">
-              <Film size={15} className="text-[#0A0A0A]" />
-              <p className="text-sm font-semibold text-[#0A0A0A]">
-                Animação de Texto
-              </p>
-            </div>
-            <p className="text-[11px] text-[#888] leading-relaxed mb-4">
-              Animações aplicadas apenas ao texto. A imagem permanece estática, preservando qualidade e foco editorial.
-            </p>
-
-            <div className="grid gap-3 sm:grid-cols-3">
-              {([
-                {
-                  key: "title",
-                  label: "Título",
-                  value: currentSlide.titleAnimation ?? project.animation,
-                  delay: currentSlide.titleAnimationDelay ?? 0,
-                  duration: currentSlide.titleAnimationDuration ?? 1.1,
-                },
-                {
-                  key: "subtitle",
-                  label: "Subtítulo",
-                  value: currentSlide.subtitleAnimation ?? project.animation,
-                  delay: currentSlide.subtitleAnimationDelay ?? 0.2,
-                  duration: currentSlide.subtitleAnimationDuration ?? 1.1,
-                },
-                {
-                  key: "tag",
-                  label: "Tag",
-                  value: currentSlide.tagAnimation ?? project.animation,
-                  delay: currentSlide.tagAnimationDelay ?? 0.4,
-                  duration: currentSlide.tagAnimationDuration ?? 0.9,
-                },
-              ] as const).map(({ key, label, value, delay, duration }) => (
-                <div key={key} className="rounded-3xl border border-[#E0E0E0] bg-[#FAFAFA] p-4">
-                  <p className="text-[10px] uppercase tracking-[0.18em] text-[#888] font-semibold mb-3">
-                    {label}
-                  </p>
-                  <select
-                    value={value}
-                    onChange={(e) =>
-                      onUpdateSlide({
-                        [`${key}Animation`]: e.target.value as AnimationType,
-                      } as Partial<SlideData>)
-                    }
-                    className="w-full px-3.5 py-2 rounded-lg border border-[#D0D0D0] bg-white text-[#0A0A0A] text-sm"
-                  >
-                    {ANIMATIONS.map((anim) => (
-                      <option key={anim.id} value={anim.id}>
-                        {anim.label}
-                      </option>
-                    ))}
-                  </select>
-
-                  <div className="mt-4 space-y-3">
-                    <div>
-                      <label className="text-[9px] uppercase tracking-[0.18em] text-[#888] font-semibold">
-                        Delay
-                      </label>
-                      <input
-                        type="range"
-                        min="0"
-                        max="1"
-                        step="0.05"
-                        value={delay}
-                        onChange={(e) =>
-                          onUpdateSlide({
-                            [`${key}AnimationDelay`]: Number(e.target.value),
-                          } as Partial<SlideData>)
-                        }
-                        className="w-full accent-[#0A0A0A] mt-2"
-                      />
-                      <p className="text-[9px] text-[#888] mt-1">{delay.toFixed(2)}s</p>
-                    </div>
-                    <div>
-                      <label className="text-[9px] uppercase tracking-[0.18em] text-[#888] font-semibold">
-                        Duração
-                      </label>
-                      <input
-                        type="range"
-                        min="0.6"
-                        max="2.5"
-                        step="0.05"
-                        value={duration}
-                        onChange={(e) =>
-                          onUpdateSlide({
-                            [`${key}AnimationDuration`]: Number(e.target.value),
-                          } as Partial<SlideData>)
-                        }
-                        className="w-full accent-[#0A0A0A] mt-2"
-                      />
-                      <p className="text-[9px] text-[#888] mt-1">{duration.toFixed(2)}s</p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="border-t border-[#EBEBEB] pt-4 space-y-3">
-              <p className="text-[10px] uppercase tracking-[0.18em] text-[#888] font-semibold">
-                Presets de Animação
-              </p>
-              <div className="grid gap-2 sm:grid-cols-3">
-                <button
-                  type="button"
-                  onClick={() =>
-                    onUpdateSlide({
-                      titleAnimation: "slide-up",
-                      subtitleAnimation: "fade-in",
-                      tagAnimation: "none",
-                      titleAnimationDelay: 0,
-                      subtitleAnimationDelay: 0.15,
-                      tagAnimationDelay: 0.35,
-                      titleAnimationDuration: 1.1,
-                      subtitleAnimationDuration: 1.1,
-                      tagAnimationDuration: 0.9,
-                    })
-                  }
-                  className="rounded-2xl border border-[#E0E0E0] bg-white py-3 px-4 text-left text-[10px] uppercase tracking-[0.18em] text-[#0A0A0A] hover:border-[#0A0A0A] transition-colors"
-                >
-                  Entrada Suave
-                </button>
-                <button
-                  type="button"
-                  onClick={() =>
-                    onUpdateSlide({
-                      titleAnimation: "reveal",
-                      subtitleAnimation: "fade-in",
-                      tagAnimation: "drift",
-                      titleAnimationDelay: 0,
-                      subtitleAnimationDelay: 0.2,
-                      tagAnimationDelay: 0.4,
-                      titleAnimationDuration: 1.2,
-                      subtitleAnimationDuration: 1,
-                      tagAnimationDuration: 0.9,
-                    })
-                  }
-                  className="rounded-2xl border border-[#E0E0E0] bg-white py-3 px-4 text-left text-[10px] uppercase tracking-[0.18em] text-[#0A0A0A] hover:border-[#0A0A0A] transition-colors"
-                >
-                  Reveal Editorial
-                </button>
-                <button
-                  type="button"
-                  onClick={() =>
-                    onUpdateSlide({
-                      titleAnimation: "fade-in",
-                      subtitleAnimation: "zoom-out",
-                      tagAnimation: "none",
-                      titleAnimationDelay: 0,
-                      subtitleAnimationDelay: 0.25,
-                      tagAnimationDelay: 0.4,
-                      titleAnimationDuration: 1,
-                      subtitleAnimationDuration: 1.2,
-                      tagAnimationDuration: 0.9,
-                    })
-                  }
-                  className="rounded-2xl border border-[#E0E0E0] bg-white py-3 px-4 text-left text-[10px] uppercase tracking-[0.18em] text-[#0A0A0A] hover:border-[#0A0A0A] transition-colors"
-                >
-                  Sequência Editorial
-                </button>
-              </div>
-            </div>
-          </>
-        )}
       </div>
-
-      {/* ── Slide actions (carousel) ─────────────────────────────────────── */}
-      {project.isCarousel && (
-        <div className="px-4 sm:px-5 pb-5 pt-3 border-t border-[#EBEBEB] flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => onSetCurrentSlide(Math.max(0, project.currentSlideIndex - 1))}
-              disabled={project.currentSlideIndex === 0}
-              className={iconButtonClass}
-            >
-              <ChevronLeft size={14} />
-            </button>
-            <span className="text-[10px] text-[#888] tracking-wide">
-              {project.currentSlideIndex + 1} / {project.slides.length}
-            </span>
-            <button
-              onClick={() =>
-                onSetCurrentSlide(Math.min(project.slides.length - 1, project.currentSlideIndex + 1))
-              }
-              disabled={project.currentSlideIndex === project.slides.length - 1}
-              className={iconButtonClass}
-            >
-              <ChevronRight size={14} />
-            </button>
-          </div>
-
-          <div className="flex w-full sm:w-auto items-center gap-2">
-            <button
-              onClick={onDuplicateSlide}
-              className="vv-btn-secondary min-h-10 flex-1 sm:flex-none"
-              title="Duplicar slide atual"
-            >
-              <Copy size={11} />
-              Duplicar
-            </button>
-            <button
-              onClick={onDeleteSlide}
-              disabled={project.slides.length <= 1}
-              className="vv-btn-danger min-h-10 flex-1 sm:flex-none"
-              title="Deletar slide atual"
-            >
-              <Trash2 size={11} />
-              Deletar
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

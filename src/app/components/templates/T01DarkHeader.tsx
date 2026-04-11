@@ -1,60 +1,53 @@
-import { motion } from "motion/react";
-import { SlideData, TextPosition, AnimationType } from "../../App";
-import { getTextAnimationVariants } from "../animationUtils";
+import { SlideData } from "../../App";
 
 interface Props {
   data: SlideData;
   width?: number;
   height?: number;
-  globalAnimation?: AnimationType;
 }
 
-function getHeaderPosition(pos: TextPosition): React.CSSProperties {
-  switch (pos) {
-    case "top":
-      return { top: 0 };
-    case "center":
-      return { top: "50%", transform: "translateY(-50%)" };
-    case "bottom":
-    default:
-      return { bottom: 0 };
-  }
+function getAbsoluteTextStyle(h: number, v: number, align: string): React.CSSProperties {
+  return {
+    position: "absolute",
+    left: `${h}%`,
+    top: `${v}%`,
+    transform: "translate(-50%, -50%)",
+    textAlign: align as React.CSSProperties["textAlign"],
+    width: "82%",
+    maxWidth: "82%",
+    pointerEvents: "none",
+    zIndex: 20,
+    boxSizing: "border-box",
+  };
 }
 
-export function T01DarkHeader({ data, width = 540, height = 960, globalAnimation }: Props) {
+export function T01DarkHeader({ data, width = 540, height = 960 }: Props) {
   const overlayOpacity = (data.overlayOpacity ?? 70) / 100;
-  const pos: TextPosition = data.textPosition ?? "top";
-  const ts = Math.max(0.75, Math.min(1.4, data.textScale ?? 1));
+  const tfs = Math.max(0.75, Math.min(1.4, data.titleFontScale ?? 1));
+  const sfs = Math.max(0.75, Math.min(1.4, data.subtitleFontScale ?? 1));
   const bgScale = data.imageScale ?? 1;
-  const bgX = Math.max(-45, Math.min(45, data.imageOffsetX ?? 0));
-  const bgY = Math.max(-45, Math.min(45, data.imageOffsetY ?? 0));
-  const bgPos = `${50 + bgX}% ${50 + bgY}%`;
+  const bgX = Math.max(-100, Math.min(100, data.imageOffsetX ?? 0));
+  const bgY = Math.max(-100, Math.min(100, data.imageOffsetY ?? 0));
+  const bgPos = `${50 + bgX / 100 * 50}% ${50 + bgY / 100 * 50}%`;
   const bgSize = `${Math.max(100, Math.min(300, bgScale * 100))}%`;
-  const titleAnimation = getTextAnimationVariants(
-    data.titleAnimation ?? (globalAnimation as any) ?? "none",
-    data.titleAnimationDuration ?? 1.1,
-    data.titleAnimationDelay ?? 0
-  );
-  const subtitleAnimation = getTextAnimationVariants(
-    data.subtitleAnimation ?? (globalAnimation as any) ?? "none",
-    data.subtitleAnimationDuration ?? 1.1,
-    data.subtitleAnimationDelay ?? 0.2
-  );
-  const tagAnimation = getTextAnimationVariants(
-    data.tagAnimation ?? (globalAnimation as any) ?? "none",
-    data.tagAnimationDuration ?? 0.9,
-    data.tagAnimationDelay ?? 0.4
-  );
+
+  const titleH = data.titleH ?? 50;
+  const titleV = data.titleV ?? 10;
+  const titleAlign = data.titleAlign ?? "center";
+  const subtitleH = data.subtitleH ?? 50;
+  const subtitleV = data.subtitleV ?? 85;
+  const subtitleAlign = data.subtitleAlign ?? "center";
+  const titleColor = data.titleColor ?? "rgba(255,255,255,1)";
+  const subtitleColor = data.subtitleColor ?? "rgba(255,255,255,0.75)";
 
   return (
     <div
       className="relative overflow-hidden bg-[#0A0A0A]"
       style={{ width: `${width}px`, height: `${height}px` }}
     >
-      {/* Background photo — background-image preserves aspect ratio via cover */}
+      {/* Background photo */}
       {data.imageUrl ? (
         <>
-          {/* Hidden img tag forces CORS cache entry so html2canvas can read background-image */}
           <img src={data.imageUrl} alt="" crossOrigin="anonymous" style={{ display: "none" }} />
           <div
             className="absolute inset-0 z-0"
@@ -81,51 +74,49 @@ export function T01DarkHeader({ data, width = 540, height = 960, globalAnimation
         style={{ background: `rgba(10,10,10,${overlayOpacity * 0.9})` }}
       />
 
-      {/* Dark header block — repositionable */}
-      <div
-        className="absolute left-0 right-0 z-20 flex flex-col items-center justify-center px-10 py-10 pointer-events-none"
-        style={{
-          ...getHeaderPosition(pos),
-          background: `rgba(10,10,10,${Math.min(0.95, overlayOpacity + 0.2)})`,
-          minHeight: "290px",
-        }}
-      >
-        {data.tag && (
-          <motion.p
-            initial={tagAnimation.initial}
-            animate={tagAnimation.animate}
-            className="tracking-[0.3em] uppercase mb-4 font-medium"
-            style={{ fontSize: "9px", color: "rgba(255,255,255,0.40)" }}
-          >
-            {data.tag}
-          </motion.p>
-        )}
-        {data.title && (
-          <motion.h1
-            initial={titleAnimation.initial}
-            animate={titleAnimation.animate}
-            className="font-[family-name:var(--font-display)] text-white uppercase text-center leading-[0.93]"
-            style={{ fontSize: `${Math.round(40 * ts)}px`, letterSpacing: "0.015em", whiteSpace: "pre-line" }}
+      {/* Title block */}
+      {data.title && (
+        <div style={getAbsoluteTextStyle(titleH, titleV, titleAlign)}>
+          {data.tag && (
+            <p
+              className="tracking-[0.3em] uppercase font-medium mb-3"
+              style={{ fontSize: "9px", color: "rgba(255,255,255,0.40)" }}
+            >
+              {data.tag}
+            </p>
+          )}
+          <h1
+            className="font-[family-name:var(--font-display)] uppercase leading-[0.93]"
+            style={{
+              fontSize: `${Math.round(40 * tfs)}px`,
+              letterSpacing: "0.015em",
+              whiteSpace: "pre-line",
+              color: titleColor,
+            }}
           >
             {data.title}
-          </motion.h1>
-        )}
-        {data.subtitle && (
-          <>
-            <div className="w-full my-5" style={{ height: "1px", background: "rgba(255,255,255,0.22)" }} />
-            <motion.p
-              initial={subtitleAnimation.initial}
-              animate={subtitleAnimation.animate}
-              className="font-light text-center leading-[1.55]"
-              style={{ fontSize: `${Math.round(13 * ts)}px`, color: "rgba(255,255,255,0.75)", maxWidth: "340px" }}
-            >
-              {data.subtitle}
-            </motion.p>
-          </>
-        )}
-      </div>
+          </h1>
+        </div>
+      )}
 
-      {/* Bottom-left brand mark */}
+      {/* Subtitle block */}
+      {data.subtitle && (
+        <div style={getAbsoluteTextStyle(subtitleH, subtitleV, subtitleAlign)}>
+          <p
+            className="font-light leading-[1.55]"
+            style={{
+              fontSize: `${Math.round(13 * sfs)}px`,
+              color: subtitleColor,
+              maxWidth: "340px",
+              margin: subtitleAlign === "center" ? "0 auto" : undefined,
+            }}
+          >
+            {data.subtitle}
+          </p>
+        </div>
+      )}
+
+      {/* Brand mark */}
       <div
         className="absolute bottom-7 left-8 z-20 font-[family-name:var(--font-display)] tracking-[0.28em] uppercase pointer-events-none"
         style={{ fontSize: "10px", color: "rgba(255,255,255,0.28)" }}
